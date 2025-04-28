@@ -2,17 +2,28 @@ import { motion } from 'framer-motion';
 
 const Card = ({ card, isFlipped, onClick }) => {
   const cardVariants = {
-    hidden: { rotateY: 0 },
-    visible: { rotateY: 180, transition: { duration: 0.6 } }
+    hidden: { 
+      rotateY: 0,
+      transition: { duration: 0.6 }
+    },
+    visible: { 
+      rotateY: 360,
+      transition: { duration: 0.6 }
+    }
   };
 
   const getCardClass = () => {
     const baseClass = 'card-base';
-    return `${baseClass} ${
-      card?.type === 'dark' || card?.type === 'light' 
-        ? 'card-dark'
-        : 'card-special'
-    }`;
+    if (!card) return `${baseClass} bg-gray-700 text-gray-500`;
+    
+    // Determine card background color based on type and effect
+    if (card.type === 'light' || (card.type === 'event' && card.description.includes('damage'))) {
+      return `${baseClass} bg-red-500 text-white`;
+    }
+    if (card.type === 'dark') {
+      return `${baseClass} card-dark`;
+    }
+    return `${baseClass} card-special`;
   };
 
   if (!card) {
@@ -31,6 +42,7 @@ const Card = ({ card, isFlipped, onClick }) => {
       variants={cardVariants}
       onClick={onClick}
       whileHover={{ scale: 1.05 }}
+      style={{ backfaceVisibility: 'visible' }}
     >
       <h2 className="text-xl font-bold mb-4">{card.title}</h2>
       <p className="text-center">{card.description}</p>

@@ -12,7 +12,16 @@ function App() {
   const [currentCard, setCurrentCard] = useState(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [inventory, setInventory] = useState([null, null]);
-  const [messages, setMessages] = useState(['Welcome to Shadows & Sparks!']);
+  const [messages, setMessages] = useState([
+    'Welcome to Shadows & Sparks! 🌓',
+    'Goal: Survive 10 rounds without losing all HP',
+    'Card Types:',
+    '- Dark Rooms (Green): Safe passage',
+    '- Light Traps (Red): DANGER! Lose 2 HP',
+    '- Special Events (Yellow/Red): Various effects',
+    '- Items (Yellow): Can be stored and used later',
+    'Watch out for red cards - they are dangerous!'
+  ]);
   const [turns, setTurns] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
@@ -21,7 +30,7 @@ function App() {
   }, []);
 
   const addMessage = (message) => {
-    setMessages(prev => [...prev, message].slice(-5));
+    setMessages(prev => [...prev, message].slice(-8));
   };
 
   const drawCard = () => {
@@ -116,17 +125,28 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">Shadows & Sparks</h1>
+          <p className="text-gray-400">Survive the darkness, avoid the light!</p>
+        </div>
+
         <div className="flex justify-between items-center mb-8">
-          <HealthBar health={health} maxHealth={5} />
-          <div className="flex gap-4">
-            {inventory.map((item, index) => (
-              <InventorySlot
-                key={index}
-                item={item}
-                onUseItem={useItem}
-                slotNumber={index}
-              />
-            ))}
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">Health:</span>
+            <HealthBar health={health} maxHealth={5} />
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-gray-400 mb-2">Inventory:</span>
+            <div className="flex gap-4">
+              {inventory.map((item, index) => (
+                <InventorySlot
+                  key={index}
+                  item={item}
+                  onUseItem={useItem}
+                  slotNumber={index}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -152,6 +172,31 @@ function App() {
           </button>
 
           <GameLog messages={messages} />
+
+          {gameOver && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            >
+              <div className="bg-gray-800 p-8 rounded-xl text-center">
+                <h2 className="text-2xl font-bold mb-4">
+                  {health > 0 ? 'Victory!' : 'Game Over'}
+                </h2>
+                <p className="mb-4">
+                  {health > 0
+                    ? 'You survived the darkness!'
+                    : 'The light consumed you...'}
+                </p>
+                <button
+                  className="game-button"
+                  onClick={() => window.location.reload()}
+                >
+                  Play Again
+                </button>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
