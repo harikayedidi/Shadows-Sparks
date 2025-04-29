@@ -1,0 +1,30 @@
+{
+  "routes": [
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*.{png,jpg,gif,svg,css,js}",
+      "/*.{ico,png}",
+      "/manifest.json"
+    ]
+  },
+  "mimeTypes": {
+    ".json": "text/json",
+    ".js": "text/javascript",
+    ".css": "text/css",
+    ".html": "text/html"
+  },
+  "globalHeaders": {
+    "content-security-policy": "default-src https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'",
+    "cache-control": "must-revalidate, max-age=0"
+  },
+  "platform": {
+    "apiRuntime": "node:18"
+  }
+}

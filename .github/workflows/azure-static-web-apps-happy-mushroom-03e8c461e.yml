@@ -23,7 +23,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - name: Build And Deploy
+      - name: Install project dependencies
+        run: |
+          npm install --legacy-peer-deps
+      - name: Build project
+        run: npm run build
+      - name: Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -33,9 +38,9 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/" # App source code path
-          api_location: "" # Api source code path - optional
+          api_location: "" # No API in this project
           output_location: "dist" # Built app content directory - optional
-          app_build_command: "npm install && npm run build" # Use npm for installation and build
+          skip_app_build: true # Skip build as we've already built it
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
