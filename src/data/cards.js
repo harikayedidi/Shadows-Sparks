@@ -13,11 +13,53 @@ export const cardData = {
   }))),
 
   lightTraps: [
-    { id: 'l1', type: 'light', title: 'Blinding Flash', description: 'A sudden burst of light! Lose 2 HP.' },
-    { id: 'l2', type: 'light', title: 'Light Beam', description: 'You\'re exposed! Lose 2 HP.' },
-    { id: 'l3', type: 'light', title: 'Daybreak', description: 'The light burns! Lose 2 HP.' },
-    { id: 'l4', type: 'light', title: 'Solar Flare', description: 'Too bright to hide! Lose 2 HP.' },
-    { id: 'l5', type: 'light', title: 'Light Burst', description: 'Nowhere to hide! Lose 2 HP.' }
+    { 
+      id: 'l1', 
+      type: 'light', 
+      title: 'Blinding Flash', 
+      description: 'A sudden burst of light! Lose 2 HP.',
+      hasChoice: false
+    },
+    { 
+      id: 'l2', 
+      type: 'light', 
+      title: 'Light Beam', 
+      description: 'Make your choice quickly!',
+      hasChoice: true,
+      choices: {
+        skip: 'Skip the next card draw',
+        damage: 'Take 1 damage instead of 2'
+      }
+    },
+    { 
+      id: 'l3', 
+      type: 'light', 
+      title: 'Daybreak', 
+      description: 'Choose your fate!',
+      hasChoice: true,
+      choices: {
+        skip: 'Hide until next turn',
+        damage: 'Endure 1 damage'
+      }
+    },
+    { 
+      id: 'l4', 
+      type: 'light', 
+      title: 'Solar Flare', 
+      description: 'Too bright to hide! Lose 2 HP.',
+      hasChoice: false
+    },
+    { 
+      id: 'l5', 
+      type: 'light', 
+      title: 'Light Burst',
+      description: 'React quickly!',
+      hasChoice: true,
+      choices: {
+        skip: 'Duck into shadows (skip next)',
+        damage: 'Shield yourself (1 HP)'
+      }
+    }
   ],
 
   specialEvents: [

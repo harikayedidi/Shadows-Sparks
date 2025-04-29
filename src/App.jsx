@@ -4,7 +4,10 @@ import Card from './components/Card';
 import HealthBar from './components/HealthBar';
 import InventorySlot from './components/InventorySlot';
 import GameLog from './components/GameLog';
+import Instructions from './components/Instructions';
+import ChoicePopup from './components/ChoicePopup';
 import { createDeck } from './data/cards';
+import audioManager from './utils/audio';
 
 function App() {
   const [health, setHealth] = useState(5);
@@ -12,29 +15,37 @@ function App() {
   const [currentCard, setCurrentCard] = useState(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [inventory, setInventory] = useState([null, null]);
+  const [isMuted, setIsMuted] = useState(false);
   const [messages, setMessages] = useState([
     'Welcome to Shadows & Sparks! 🌓',
-    'Goal: Survive 10 rounds without losing all HP',
-    'Card Types:',
-    '- Dark Rooms (Green): Safe passage',
-    '- Light Traps (Red): DANGER! Lose 2 HP',
-    '- Special Events (Yellow/Red): Various effects',
-    '- Items (Yellow): Can be stored and used later',
-    'Watch out for red cards - they are dangerous!'
+    'Survive 10 rounds to win!'
   ]);
   const [turns, setTurns] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [gameResult, setGameResult] = useState(null); // 'victory' or 'defeat'
+  const [choicePopup, setChoicePopup] = useState({
+    isOpen: false,
+    options: [],
+    onChoice: null
+  });
 
   useEffect(() => {
     setDeck(createDeck());
   }, []);
 
   const addMessage = (message) => {
-    setMessages(prev => [...prev, message].slice(-8));
+    setMessages(prev => [...prev, message]);
+  };
+
+  const toggleMute = () => {
+    const newMuted = audioManager.toggleMute();
+    setIsMuted(newMuted);
   };
 
   const drawCard = () => {
     if (gameOver || deck.length === 0) return;
+    
+    audioManager.play('cardFlip');
 
     const newDeck = [...deck];
     const drawnCard = newDeck.pop();
@@ -67,11 +78,14 @@ function App() {
       const newHealth = Math.max(0, h - amount);
       if (newHealth === 0) {
         setGameOver(true);
-        addMessage('Game Over! You ran out of health.');
+        setGameResult('defeat');
+        audioManager.play('defeat');
+        addMessage('Game Over! The darkness claims another victim...');
       }
       return newHealth;
     });
-    addMessage(`You took ${amount} damage!`);
+    audioManager.play('damage');
+    addMessage(`Lost ${amount} HP from a light trap!`);
   };
 
   const addToInventory = (item) => {
@@ -80,16 +94,43 @@ function App() {
       const newInventory = [...inventory];
       newInventory[slot] = item;
       setInventory(newInventory);
-      addMessage(`Added ${item.title} to inventory!`);
+      addMessage(`Found a useful ${item.title}!`);
     } else {
       addMessage('Inventory is full!');
     }
   };
 
+  const openChoicePopup = (options, onChoice) => {
+    setChoicePopup({
+      isOpen: true,
+      options,
+      onChoice: (choice) => {
+        onChoice(choice);
+        closeChoicePopup();
+      }
+    });
+  };
+
+  const closeChoicePopup = () => {
+    setChoicePopup({
+      isOpen: false,
+      options: [],
+      onChoice: null
+    });
+  };
+
   const handleSpecialEvent = (card) => {
-    // For MVP, special events just deal 1 damage
-    takeDamage(1);
-    addMessage(`${card.title}: ${card.description}`);
+    if (card.choices) {
+      openChoicePopup(card.choices, (choice) => {
+        if (choice.effect) {
+          choice.effect({ setHealth, setInventory, addMessage });
+        }
+        addMessage(`${card.title}: ${choice.description}`);
+      });
+    } else {
+      takeDamage(1);
+      addMessage(`${card.title}: ${card.description}`);
+    }
   };
 
   const useItem = (item, slot) => {
@@ -97,13 +138,14 @@ function App() {
     newInventory[slot] = null;
     setInventory(newInventory);
 
+    audioManager.play('itemUse');
+    
     switch (item.use) {
       case 'heal':
         setHealth(h => Math.min(5, h + 2));
-        addMessage(`Used ${item.title} to heal 2 HP!`);
+        addMessage(`Used ${item.title} - Healed 2 HP!`);
         break;
       case 'preventDamage':
-        // Implementation would go here
         addMessage(`Used ${item.title}!`);
         break;
       default:
@@ -114,7 +156,9 @@ function App() {
   const checkWinCondition = () => {
     if (turns >= 10 && health > 0) {
       setGameOver(true);
-      addMessage('Victory! You survived the darkness!');
+      setGameResult('victory');
+      audioManager.play('victory');
+      addMessage('Victory! You mastered the shadows!');
     }
   };
 
@@ -123,83 +167,187 @@ function App() {
   }, [turns]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Shadows & Sparks</h1>
-          <p className="text-gray-400">Survive the darkness, avoid the light!</p>
-        </div>
-
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400">Health:</span>
-            <HealthBar health={health} maxHealth={5} />
+    <motion.div 
+      className="game-container"
+      animate={gameResult === 'victory' ? {
+        background: "linear-gradient(to bottom, #1a1a2e, #162447)"
+      } : gameResult === 'defeat' ? {
+        background: "linear-gradient(to bottom, #1a0f0f, #2d1717)"
+      } : {}}
+      transition={{ duration: 1 }}
+    >
+      <div className="game-wrapper">
+        {/* Game Header */}
+        <motion.div 
+          className="text-center mb-8"
+          animate={gameResult === 'victory' ? { y: [0, -10, 0] } : {}}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center justify-between w-full max-w-4xl mx-auto px-4">
+            <div className="text-center flex-1">
+              <h1 className="game-title">Shadows & Sparks</h1>
+              <p className="game-subtitle">Survive the darkness, avoid the light!</p>
+            </div>
+            <button
+              onClick={toggleMute}
+              className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+              aria-label={isMuted ? "Unmute sound effects" : "Mute sound effects"}
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
           </div>
-          <div className="flex flex-col items-end">
-            <span className="text-gray-400 mb-2">Inventory:</span>
-            <div className="flex gap-4">
-              {inventory.map((item, index) => (
-                <InventorySlot
-                  key={index}
-                  item={item}
-                  onUseItem={useItem}
-                  slotNumber={index}
-                />
-              ))}
+        </motion.div>
+
+        {/* Main Game Content */}
+        <div className="w-full max-w-2xl mx-auto">
+          {/* Status Bar */}
+          <div className="game-header">
+            {/* Left side: Health and Instructions */}
+            <div className="flex flex-col gap-4 w-full sm:w-72">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400">Health:</span>
+                <HealthBar health={health} maxHealth={5} />
+              </div>
+              {/* <Instructions /> */}
+            </div>
+
+            {/* Right side: Inventory */}
+            <div className="flex flex-col items-center sm:items-end">
+              <span className="text-gray-400 mb-2">Inventory:</span>
+              <div className="flex gap-4">
+                {inventory.map((item, index) => (
+                  <InventorySlot
+                    key={index}
+                    item={item}
+                    onUseItem={useItem}
+                    slotNumber={index}
+                  />
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Game Board */}
+          <div className="game-content my-8 shadow-lg">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentCard?.id || 'empty'}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="w-full flex justify-center"
+              >
+                <Card 
+                  card={currentCard} 
+                  isFlipped={isFlipped} 
+                  isVictory={gameResult === 'victory'}
+                  isDefeat={gameResult === 'defeat'}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            <motion.button
+              className="game-button"
+              onClick={drawCard}
+              disabled={gameOver || choicePopup.isOpen}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label={`Draw card, ${10 - turns} turns remaining`}
+            >
+              Draw Card ({10 - turns} remaining)
+            </motion.button>
+
+            <GameLog messages={messages} />
+          </div>
         </div>
 
-        <div className="flex flex-col items-center gap-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentCard?.id || 'empty'}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full flex justify-center"
-            >
-              <Card card={currentCard} isFlipped={isFlipped} />
-            </motion.div>
-          </AnimatePresence>
-
-          <button
-            className={`game-button ${gameOver ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={drawCard}
-            disabled={gameOver}
-          >
-            Draw Card ({10 - turns} remaining)
-          </button>
-
-          <GameLog messages={messages} />
-
-          {gameOver && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-            >
-              <div className="bg-gray-800 p-8 rounded-xl text-center">
-                <h2 className="text-2xl font-bold mb-4">
-                  {health > 0 ? 'Victory!' : 'Game Over'}
-                </h2>
-                <p className="mb-4">
-                  {health > 0
-                    ? 'You survived the darkness!'
-                    : 'The light consumed you...'}
-                </p>
-                <button
-                  className="game-button"
-                  onClick={() => window.location.reload()}
-                >
-                  Play Again
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
+        <Instructions />
       </div>
-    </div>
+
+      <ChoicePopup {...choicePopup} />
+
+      {/* Game Over Modal */}
+      <AnimatePresence>
+        {gameOver && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="game-over-title"
+          >
+            <motion.div 
+              className="bg-gray-800/90 p-8 rounded-xl text-center max-w-sm w-full shadow-2xl"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            >
+              <motion.h2
+                id="game-over-title"
+                className={`text-3xl font-bold mb-4 ${gameResult === 'victory' ? 'text-yellow-400' : 'text-red-400'}`}
+                animate={gameResult === 'victory' ? {
+                  scale: [1, 1.2, 1],
+                  transition: { duration: 0.5, repeat: Infinity, repeatDelay: 1 }
+                } : {}}
+              >
+                {gameResult === 'victory' ? '🎉 Victory!' : '💔 Game Over'}
+              </motion.h2>
+              <p className="mb-6 text-lg">
+                {gameResult === 'victory'
+                  ? 'You survived the darkness!'
+                  : 'The light consumed you...'}
+              </p>
+              <motion.button
+                className="game-button"
+                onClick={() => window.location.reload()}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Play again"
+              >
+                Play Again
+              </motion.button>
+
+              {/* Victory particles */}
+              {gameResult === 'victory' && (
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {[...Array(20)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-2 h-2 bg-yellow-400 rounded-full"
+                      animate={{
+                        x: [0, Math.random() * 200 - 100],
+                        y: [0, Math.random() * 200 - 100],
+                        scale: [1, 0],
+                        opacity: [1, 0],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        delay: i * 0.1,
+                        ease: "easeOut"
+                      }}
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
