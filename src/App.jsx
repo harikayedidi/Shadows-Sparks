@@ -42,8 +42,91 @@ function App() {
     setIsMuted(newMuted);
   };
 
+  const [skipNextTurn, setSkipNextTurn] = useState(false);
+  const [peeksRemaining, setPeeksRemaining] = useState(2);
+
+  const handleChoiceAction = (choice) => {
+    switch (choice.action) {
+      case 'skip':
+        setSkipNextTurn(true);
+        addMessage('You hide in the shadows, skipping your next turn.');
+        audioManager.play('itemUse');
+        break;
+
+      case 'damage':
+        takeDamage(1);
+        addMessage('You endure the light, taking reduced damage.');
+        audioManager.play('damage');
+        break;
+
+      case 'heal':
+        setHealth(h => Math.min(5, h + 1));
+        addMessage('You feel rejuvenated! (+1 HP)');
+        audioManager.play('itemUse');
+        break;
+
+      case 'draw':
+        addMessage('You choose to draw another card...');
+        audioManager.play('cardFlip');
+        setTimeout(() => drawCard(), 500); // Slight delay for better UX
+        break;
+
+      case 'peek':
+        if (peeksRemaining > 0 && deck.length > 0) {
+          setPeeksRemaining(prev => prev - 1);
+          const nextCard = deck[deck.length - 1];
+          addMessage(`Peek (${peeksRemaining - 1} left): Next card is ${nextCard.title}`);
+          audioManager.play('itemUse');
+        }
+        break;
+
+      case 'roll_even':
+        const roll = Math.floor(Math.random() * 6) + 1;
+        addMessage(`🎲 You rolled a ${roll}!`);
+        if (roll % 2 === 0) {
+          addMessage('Even roll - You avoid the danger!');
+          audioManager.play('itemUse');
+        } else {
+          addMessage('Odd roll - Bad luck!');
+          audioManager.play('damage');
+          takeDamage(1);
+        }
+        break;
+
+      case 'roll_agility':
+        const agility = Math.random() > 0.5;
+        if (agility) {
+          setHealth(h => Math.min(5, h + 1));
+          addMessage('✨ Perfect agility! Gained 1 HP.');
+          audioManager.play('itemUse');
+        } else {
+          addMessage('❌ Failed the agility check!');
+          audioManager.play('damage');
+          takeDamage(1);
+        }
+        break;
+
+      case 'nothing':
+        addMessage('You remain still. The danger passes.');
+        break;
+    }
+
+    // Close the popup after handling the action
+    setChoicePopup(prev => ({
+      ...prev,
+      isOpen: false
+    }));
+  };
+
   const drawCard = () => {
     if (gameOver || deck.length === 0) return;
+
+    // Check if should skip this turn
+    if (skipNextTurn) {
+      setSkipNextTurn(false);
+      addMessage('Turn skipped (hiding in shadows).');
+      return;
+    }
     
     audioManager.play('cardFlip');
 
@@ -54,7 +137,17 @@ function App() {
     setIsFlipped(true);
     setTurns(t => t + 1);
 
-    handleCardEffect(drawnCard);
+    // If card has choices, show popup immediately
+    if (drawnCard.hasChoice) {
+      setChoicePopup({
+        isOpen: true,
+        title: drawnCard.description,
+        choices: drawnCard.choices,
+        onChoice: handleChoiceAction
+      });
+    } else {
+      handleCardEffect(drawnCard);
+    }
   };
 
   const handleCardEffect = (card) => {
@@ -120,14 +213,16 @@ function App() {
   };
 
   const handleSpecialEvent = (card) => {
-    if (card.choices) {
-      openChoicePopup(card.choices, (choice) => {
-        if (choice.effect) {
-          choice.effect({ setHealth, setInventory, addMessage });
-        }
-        addMessage(`${card.title}: ${choice.description}`);
+    if (card.hasChoice) {
+      setChoicePopup({
+        isOpen: true,
+        title: card.description,
+        description: card.title,
+        choices: card.choices,
+        onChoice: handleChoice
       });
     } else {
+      // Default behavior for events without choices
       takeDamage(1);
       addMessage(`${card.title}: ${card.description}`);
     }
@@ -228,7 +323,7 @@ function App() {
           </div>
 
           {/* Game Board */}
-          <div className="game-content my-8 shadow-lg">
+          <div className="game-content my-8 shadow-lg relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentCard?.id || 'empty'}
@@ -265,7 +360,18 @@ function App() {
         <Instructions />
       </div>
 
-      <ChoicePopup {...choicePopup} />
+      {/* Choice Popup - Positioned above the card */}
+      <AnimatePresence>
+        {choicePopup.isOpen && (
+          <div className="fixed inset-0 z-50 pointer-events-none">
+            <div className="flex items-center justify-center h-full">
+              <div className="pointer-events-auto w-full max-w-lg px-4">
+                <ChoicePopup {...choicePopup} />
+              </div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Game Over Modal */}
       <AnimatePresence>

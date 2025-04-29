@@ -1,6 +1,8 @@
 # Shadows and Sparks - Solo Card Survival Game 
 
 🧠 **This game was fully built using AI, based on prompts I gave.**
+
+
 **Shadows and Sparks** is a fast-paced solo card game built with React, TailwindCSS, and motion.dev.
 You must draw cards, survive dangerous encounters, and manage your inventory to make it through the darkness. Light is deadly — use it wisely!
 

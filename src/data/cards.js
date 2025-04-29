@@ -17,57 +17,185 @@ export const cardData = {
       id: 'l1', 
       type: 'light', 
       title: 'Blinding Flash', 
-      description: 'A sudden burst of light! Lose 2 HP.',
-      hasChoice: false
+      description: 'A sudden burst of light! Lose 2 HP.'
     },
     { 
       id: 'l2', 
       type: 'light', 
       title: 'Light Beam', 
-      description: 'Make your choice quickly!',
+      description: 'Quick! Make your choice:',
       hasChoice: true,
-      choices: {
-        skip: 'Skip the next card draw',
-        damage: 'Take 1 damage instead of 2'
-      }
+      choices: [
+        { 
+          label: 'Skip next card', 
+          action: 'skip',
+          style: 'safe',
+          subtext: 'Duck into the shadows'
+        },
+        { 
+          label: 'Take 1 damage', 
+          action: 'damage',
+          style: 'danger',
+          subtext: 'Instead of 2 HP'
+        }
+      ]
     },
     { 
       id: 'l3', 
       type: 'light', 
       title: 'Daybreak', 
-      description: 'Choose your fate!',
+      description: 'The light approaches! Choose:',
       hasChoice: true,
-      choices: {
-        skip: 'Hide until next turn',
-        damage: 'Endure 1 damage'
-      }
+      choices: [
+        { 
+          label: 'Hide', 
+          action: 'skip',
+          style: 'safe',
+          subtext: 'Skip your next turn'
+        },
+        { 
+          label: 'Endure', 
+          action: 'damage',
+          style: 'danger',
+          subtext: 'Take 1 HP damage'
+        }
+      ]
     },
     { 
       id: 'l4', 
       type: 'light', 
       title: 'Solar Flare', 
-      description: 'Too bright to hide! Lose 2 HP.',
-      hasChoice: false
+      description: 'Too bright to hide! Lose 2 HP.'
     },
     { 
       id: 'l5', 
       type: 'light', 
       title: 'Light Burst',
-      description: 'React quickly!',
+      description: 'React to the light:',
       hasChoice: true,
-      choices: {
-        skip: 'Duck into shadows (skip next)',
-        damage: 'Shield yourself (1 HP)'
-      }
+      choices: [
+        { 
+          label: 'Duck Away', 
+          action: 'skip',
+          style: 'safe',
+          subtext: 'Skip next card draw'
+        },
+        { 
+          label: 'Shield Yourself', 
+          action: 'damage',
+          style: 'danger',
+          subtext: 'Take 1 HP damage'
+        }
+      ]
     }
   ],
 
   specialEvents: [
-    { id: 's1', type: 'event', title: 'Mysterious Echo', description: 'Roll for your fate: Even - Safe, Odd - Lose 1 HP' },
-    { id: 's2', type: 'event', title: 'Shadow Dance', description: 'Test your agility: Success - Gain 1 HP, Fail - Lose 1 HP' },
-    { id: 's3', type: 'event', title: 'Dark Whispers', description: 'Make a choice: Draw another card or heal 1 HP' },
-    { id: 's4', type: 'event', title: 'Void Portal', description: 'Skip next card or take 1 damage' },
-    { id: 's5', type: 'event', title: 'Time Rift', description: 'Peek at next card or heal 1 HP' }
+    { 
+      id: 's1', 
+      type: 'event', 
+      title: 'Mysterious Echo', 
+      description: 'A strange sound echoes...',
+      hasChoice: true,
+      choices: [
+        {
+          label: 'Listen Closely',
+          action: 'roll_even',
+          style: 'special',
+          subtext: 'Even roll - Safe, Odd roll - Lose 1 HP'
+        },
+        {
+          label: 'Cover Ears',
+          action: 'skip',
+          style: 'safe',
+          subtext: 'Skip next card'
+        }
+      ]
+    },
+    { 
+      id: 's2', 
+      type: 'event', 
+      title: 'Shadow Dance', 
+      description: 'The shadows move in a pattern...',
+      hasChoice: true,
+      choices: [
+        {
+          label: 'Dance Along',
+          action: 'roll_agility',
+          style: 'special',
+          subtext: 'Success - Gain 1 HP, Fail - Lose 1 HP'
+        },
+        {
+          label: 'Stay Still',
+          action: 'nothing',
+          style: 'safe',
+          subtext: 'Nothing happens'
+        }
+      ]
+    },
+    { 
+      id: 's3', 
+      type: 'event', 
+      title: 'Dark Whispers', 
+      description: 'The darkness offers a choice:',
+      hasChoice: true,
+      choices: [
+        {
+          label: 'Draw Card',
+          action: 'draw',
+          style: 'special',
+          subtext: 'Risk another card'
+        },
+        {
+          label: 'Heal 1 HP',
+          action: 'heal',
+          style: 'safe',
+          subtext: 'Restore some health'
+        }
+      ]
+    },
+    { 
+      id: 's4', 
+      type: 'event', 
+      title: 'Void Portal', 
+      description: 'A dark portal appears:',
+      hasChoice: true,
+      choices: [
+        {
+          label: 'Step Through',
+          action: 'skip',
+          style: 'special',
+          subtext: 'Skip next card'
+        },
+        {
+          label: 'Resist Pull',
+          action: 'damage',
+          style: 'danger',
+          subtext: 'Take 1 HP damage'
+        }
+      ]
+    },
+    { 
+      id: 's5', 
+      type: 'event', 
+      title: 'Time Rift', 
+      description: 'Time bends around you:',
+      hasChoice: true,
+      choices: [
+        {
+          label: 'Peek Ahead',
+          action: 'peek',
+          style: 'special',
+          subtext: 'See next card'
+        },
+        {
+          label: 'Absorb Energy',
+          action: 'heal',
+          style: 'safe',
+          subtext: 'Heal 1 HP'
+        }
+      ]
+    }
   ],
 
   items: [
