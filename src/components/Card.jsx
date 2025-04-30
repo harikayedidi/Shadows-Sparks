@@ -1,21 +1,26 @@
 import { motion } from 'framer-motion';
 
-const Card = ({ card, isFlipped, isVictory, isDefeat }) => {
+const Card = ({ card, isFlipped, isVictory, isDefeat, theme }) => {
   const cardVariants = {
-    hidden: { 
-      rotateY: 0,
-      transition: { 
+    hidden: {
+      y: 50,
+      opacity: 0,
+      scale: 0.9,
+      transition: {
         type: "spring",
         stiffness: 300,
         damping: 30
       }
     },
-    visible: { 
-      rotateY: 360,
-      transition: { 
+    visible: {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
         type: "spring",
         stiffness: 300,
-        damping: 30
+        damping: 30,
+        duration: 0.5
       }
     },
     victory: {
@@ -37,27 +42,78 @@ const Card = ({ card, isFlipped, isVictory, isDefeat }) => {
     }
   };
 
-  const getCardClass = () => {
+  const getCardStyles = () => {
     if (!card) {
-      return 'card-base bg-gradient-to-br from-gray-700 to-gray-800 text-gray-400';
+      return {
+        className: 'card-base bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700 text-gray-400',
+        style: {
+          boxShadow: '0 0 15px rgba(75, 85, 99, 0.3)'
+        }
+      };
     }
 
-    const baseClass = 'card-base relative overflow-hidden';
-    const glowStyles = {
-      dark: 'bg-gradient-to-br from-green-600 to-green-500 shadow-[0_0_25px_rgba(34,197,94,0.3)]',
-      light: 'bg-gradient-to-br from-red-600 to-red-500 shadow-[0_0_25px_rgba(239,68,68,0.3)]',
-      item: 'bg-gradient-to-br from-yellow-500 to-yellow-400 shadow-[0_0_25px_rgba(234,179,8,0.3)]',
-      event: 'bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 shadow-[0_0_25px_rgba(168,85,247,0.3)] animate-gradient'
+    const baseClass = 'card-base relative overflow-hidden bg-black/40 backdrop-blur-sm';
+    let borderColor = '';
+    let shadowColor = '';
+
+    const getThemeColors = () => {
+      if (theme?.borderGlow) {
+        switch (card.type) {
+          case 'dark':
+            return { color: theme.borderGlow.safe, opacity: 0.3 };
+          case 'light':
+            return { color: theme.borderGlow.trap, opacity: 0.3 };
+          case 'item':
+            return { color: theme.borderGlow.item, opacity: 0.3 };
+          case 'event':
+            return { special: true };
+        }
+      }
+      // Fallback colors if no theme
+      switch (card.type) {
+        case 'dark':
+          return { color: '#00ff9d', opacity: 0.3 };
+        case 'light':
+          return { color: '#ff4d4d', opacity: 0.3 };
+        case 'item':
+          return { color: '#ffd700', opacity: 0.3 };
+        case 'event':
+          return { special: true };
+      }
     };
 
-    return `${baseClass} ${glowStyles[card.type] || ''}`;
+    const themeColors = getThemeColors();
+    if (themeColors?.special) {
+      return {
+        className: `${baseClass} rainbow-border`,
+        style: {
+          border: '2px solid transparent'
+        }
+      };
+    }
+
+    if (themeColors) {
+      borderColor = themeColors.color;
+      shadowColor = themeColors.color;
+    }
+
+    return {
+      className: baseClass,
+      style: {
+        border: `2px solid ${borderColor}`,
+        boxShadow: `0 0 15px ${shadowColor}`
+      }
+    };
   };
 
   if (!card) {
     return (
-      <motion.div 
-        className="card-base bg-gradient-to-br from-gray-700 to-gray-800 text-gray-400 
+      <motion.div
+        className="card-base bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700 text-gray-400
                    flex items-center justify-center cursor-pointer"
+        style={{
+          boxShadow: '0 0 15px rgba(75, 85, 99, 0.3)'
+        }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         role="button"
@@ -70,19 +126,20 @@ const Card = ({ card, isFlipped, isVictory, isDefeat }) => {
   }
 
   const animate = isVictory ? "victory" : isDefeat ? "defeat" : isFlipped ? "visible" : "hidden";
+  const cardStyles = getCardStyles();
+  const combinedStyle = {
+    ...cardStyles.style
+  };
 
   return (
     <motion.div
-      className={getCardClass()}
+      className={cardStyles.className}
+      style={combinedStyle}
       initial="hidden"
       animate={animate}
       variants={cardVariants}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.98 }}
-      style={{ 
-        backfaceVisibility: 'visible',
-        transformStyle: 'preserve-3d'
-      }}
       role="article"
       aria-label={`${card.type} card: ${card.title}`}
     >

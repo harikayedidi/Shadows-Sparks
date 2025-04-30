@@ -28,7 +28,7 @@ const InventorySlot = ({ item, onUseItem, slotNumber }) => {
       role={item ? "button" : "region"}
       tabIndex={item ? 0 : -1}
       onKeyDown={handleKeyPress}
-      aria-label={item ? `Use ${item.title} from inventory slot ${slotNumber}` : `Empty inventory slot ${slotNumber}`}
+      aria-label={item ? `Use ${item.title} from inventory slot ${slotNumber + 1}` : `Empty inventory slot ${slotNumber + 1}`}
     >
       {/* Glow effect for items */}
       {item && (
@@ -46,7 +46,7 @@ const InventorySlot = ({ item, onUseItem, slotNumber }) => {
 
       {/* Content */}
       {item ? (
-        <motion.div 
+        <motion.div
           className="transform scale-50 relative z-10"
           initial={{ rotate: 0 }}
           whileHover={{ rotate: [-1, 1] }}
@@ -57,7 +57,7 @@ const InventorySlot = ({ item, onUseItem, slotNumber }) => {
       ) : (
         <div className="flex flex-col items-center justify-center space-y-2">
           <span className="text-gray-500 text-sm">Empty</span>
-          <span className="text-gray-600 text-xs">Slot {slotNumber}</span>
+          <span className="text-gray-600 text-xs">Slot {slotNumber + 1}</span>
         </div>
       )}
 

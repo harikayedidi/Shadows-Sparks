@@ -1,0 +1,133 @@
+/* Base particle styles */
+.snow-particles::before,
+.ember-particles::before,
+.leaf-particles::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Smooth theme transitions */
+.game-container {
+  transition: background 0.5s ease-in-out;
+}
+
+.game-button {
+  transition: all 0.3s ease-in-out;
+}
+
+[class*="-particles"]::before {
+  transition: background 0.5s ease-in-out;
+}
+
+/* Snow particles */
+.snow-particles::before {
+  background: repeating-linear-gradient(
+    transparent 0%,
+    rgba(165, 216, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 200%;
+  animation: snow 8s linear infinite;
+}
+
+/* Ember particles */
+.ember-particles::before {
+  background: 
+    radial-gradient(circle at center, transparent 0%, rgba(255, 107, 77, 0) 50%, transparent 100%),
+    repeating-radial-gradient(circle at center, rgba(255, 107, 77, 0.1) 0%, transparent 10%);
+  background-size: 200% 200%, 100% 100%;
+  animation: embers 4s ease infinite;
+}
+
+/* Leaf particles */
+.leaf-particles::before {
+  background:
+    radial-gradient(circle at center, rgba(77, 255, 136, 0.1) 0%, transparent 50%),
+    repeating-linear-gradient(
+      45deg,
+      transparent 0%,
+      rgba(77, 255, 136, 0.1) 10%,
+      transparent 20%
+    );
+  background-size: 200% 200%, 50px 50px;
+  animation: leaves 8s ease-in-out infinite;
+}
+
+@keyframes snow {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 200%; }
+}
+
+@keyframes embers {
+  0% { 
+    opacity: 0.3;
+    transform: translateY(0) scale(1);
+  }
+  50% { 
+    opacity: 0.5;
+    transform: translateY(-20px) scale(1.1);
+  }
+  100% { 
+    opacity: 0.3;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes leaves {
+  0% {
+    opacity: 0.3;
+    background-position: 0% 0%, 0 0;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.5;
+    background-position: 100% 100%, 25px 25px;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 0.3;
+    background-position: 0% 0%, 0 0;
+    transform: translateY(0);
+  }
+}
+
+/* Rainbow animation for special cards */
+.rainbow-border {
+  position: relative;
+}
+
+.rainbow-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    45deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #8f00ff
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rainbow-rotate 4s linear infinite;
+}
+
+@keyframes rainbow-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

@@ -3,17 +3,48 @@ import { useEffect, useRef } from 'react';
 
 const GameLog = ({ messages }) => {
   const scrollContainerRef = useRef(null);
+  const userScrollRef = useRef(false);
+  const lastScrollTopRef = useRef(0);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollContainerRef.current) {
-      const { scrollHeight, clientHeight } = scrollContainerRef.current;
-      scrollContainerRef.current.scrollTo({
-        top: scrollHeight - clientHeight,
-        behavior: 'smooth'
-      });
+      const container = scrollContainerRef.current;
+      const { scrollHeight, clientHeight, scrollTop } = container;
+      const isScrolledNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
+
+      // Only auto-scroll if user hasn't manually scrolled up
+      if (!userScrollRef.current || isScrolledNearBottom) {
+        // Use requestAnimationFrame for smoother scrolling
+        requestAnimationFrame(() => {
+          container.scrollTo({
+            top: scrollHeight,
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+          });
+        });
+      }
     }
   }, [messages]);
+
+  // Track user scrolling
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const { scrollTop } = container;
+      
+      // Detect if user is scrolling up
+      if (scrollTop < lastScrollTopRef.current) {
+        userScrollRef.current = true;
+      }
+      
+      // Reset when scrolled to bottom
+      if (container.scrollHeight - (scrollTop + container.clientHeight) < 10) {
+        userScrollRef.current = false;
+      }
+      
+      lastScrollTopRef.current = scrollTop;
+    }
+  };
 
   return (
     <motion.div 
@@ -30,10 +61,14 @@ const GameLog = ({ messages }) => {
         <span className="text-sm text-gray-500">{messages.length} events</span>
       </div>
       
-      <div 
+      <div
         ref={scrollContainerRef}
         className="space-y-2 overflow-y-auto pr-2 custom-scrollbar"
-        style={{ maxHeight: 'calc(100vh - 500px)', minHeight: '12rem' }}
+        style={{
+          maxHeight: 'min(calc(100vh - 500px), 24rem)',
+          minHeight: '12rem'
+        }}
+        onScroll={handleScroll}
       >
         <AnimatePresence mode="popLayout">
           {messages.map((message, index) => (

@@ -1,6 +1,6 @@
 # Shadows and Sparks - Solo Card Survival Game 
 
-🧠 **This game was fully built using AI, based on prompts I gave.**
+🧠 **This game was mostly built using AI, based on prompts I gave.**
 
 
 **Shadows and Sparks** is a fast-paced solo card game built with React, TailwindCSS, and motion.dev.
@@ -19,6 +19,10 @@ You must draw cards, survive dangerous encounters, and manage your inventory to 
 
 - Use collected items to heal, avoid traps, or reroll cards.
 - Survive **10 turns** without your HP reaching zero to win the game.
+- Choose from three unique realms, each with its own visual theme:
+  - **Frozen Crypts**: Icy blue theme with snowfall effects
+  - **Ashen Depths**: Deep red theme with ember particles
+  - **Void Garden**: Lush green theme with floating leaves
 
 ---
 
@@ -26,9 +30,27 @@ You must draw cards, survive dangerous encounters, and manage your inventory to 
 
 - Fast, solo gameplay (2-5 min rounds)
 - Animated card flips and damage effects (using motion.dev)
-- Colorful design with green and yellow themed cards
+- Colorful design with theme-specific visuals and particles
 - Inventory system (hold and use items)
 - Health tracking and win/lose screens
+- Dynamic theme switching with smooth transitions
+- Auto-scrolling game log with user scroll preservation
+- Fully accessible with keyboard navigation and screen reader support
+
+### 🎨 Theme System
+- Each realm features unique:
+  - Background gradients and particle effects
+  - Card back designs
+  - Button and border glow effects
+  - Smooth transitions between themes
+
+### ♿ Accessibility Features
+- Full keyboard navigation support
+- Clear focus indicators
+- ARIA labels and roles
+- Screen reader compatible game log
+- Reduced motion support
+- High contrast text and UI elements
 
 ---
 
