@@ -403,7 +403,12 @@ function App() {
                   <span className="text-gray-400">Health:</span>
                   <HealthBar health={health} maxHealth={5} />
                 </div>
-                <DeckStack count={deck.length} theme={theme} />
+                <DeckStack
+                  count={deck.length}
+                  theme={theme}
+                  onDrawCard={drawCard}
+                  isDisabled={gameOver || choicePopup.isOpen}
+                />
               </div>
               {/* <Instructions /> */}
             </div>
@@ -447,13 +452,14 @@ function App() {
             </AnimatePresence>
 
             <motion.button
-              className="game-button relative overflow-hidden dark:text-white text-gray-900 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
+              className="game-button relative overflow-hidden text-white font-bold text-shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
               onClick={drawCard}
               disabled={gameOver || choicePopup.isOpen}
               style={{
-                background: theme.buttonGlow,
+                background: `linear-gradient(to bottom, ${theme.particleColor}40, ${theme.particleColor}20)`,
+                backdropFilter: 'blur(4px)',
                 transition: "all 0.3s ease",
-                textShadow: "0 1px 2px rgba(0,0,0,0.5)"
+                textShadow: "0 2px 4px rgba(0,0,0,0.75)"
               }}
               whileHover={{
                 scale: 1.05,
