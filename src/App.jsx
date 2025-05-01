@@ -1,24 +1,24 @@
-import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Card from './components/Card';
-import GameOverModal from './components/GameOverModal';
-import DeckStack from './components/CardBack';
-import DrawCounter from './components/DrawCounter';
-import HealthBar from './components/HealthBar';
-import InventorySlot from './components/InventorySlot';
-import GameLog from './components/GameLog';
-import Instructions from './components/Instructions';
-import ChoicePopup from './components/ChoicePopup';
-import WelcomePopup from './components/WelcomePopup';
-import ThemeSelector from './components/ThemeSelector';
-import themes from './data/themes';
-import { useGameState } from './hooks/useGameState';
-import { useGameEffects } from './hooks/useGameEffects';
-import { useInventory } from './hooks/useInventory';
-import { useCardChoices } from './hooks/useCardChoices';
-import { useCardManagement } from './hooks/useCardManagement';
-import { useGameUI } from './hooks/useGameUI';
-import ErrorBoundary from './components/ErrorBoundary';
+import { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Card from "./components/Card";
+import GameOverModal from "./components/GameOverModal";
+import DeckStack from "./components/DeckStack";
+import DrawCounter from "./components/DrawCounter";
+import HealthBar from "./components/HealthBar";
+import InventorySlot from "./components/InventorySlot";
+import GameLog from "./components/GameLog";
+import Instructions from "./components/Instructions";
+import ChoicePopup from "./components/ChoicePopup";
+import WelcomePopup from "./components/WelcomePopup";
+import ThemeSelector from "./components/ThemeSelector";
+import themes from "./data/themes";
+import { useGameState } from "./hooks/useGameState";
+import { useGameEffects } from "./hooks/useGameEffects";
+import { useInventory } from "./hooks/useInventory";
+import { useCardChoices } from "./hooks/useCardChoices";
+import { useCardManagement } from "./hooks/useCardManagement";
+import { useGameUI } from "./hooks/useGameUI";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   // Initialize theme and UI state
@@ -26,14 +26,12 @@ function App() {
     showWelcome,
     closeWelcome,
     showInventory,
-    revealInventory,
-    isMobile,
     showInstructions,
     toggleInstructions,
     theme,
     setTheme,
     showThemeSelector,
-    toggleThemeSelector
+    toggleThemeSelector,
   } = useGameUI();
 
   // Initialize base game state
@@ -56,7 +54,8 @@ function App() {
     setEndlessModeUnlocked,
     addMessage,
     toggleMute,
-    resetGameState
+    resetGameState,
+    incrementTurn,
   } = useGameState();
 
   // Create stable game state reference
@@ -78,31 +77,37 @@ function App() {
     addMessage,
     resetGameState,
     setGameOver,
-    setGameResult
+    setGameResult,
+    incrementTurn,
   };
 
   // Initialize game systems in dependency order
   const gameEffects = useGameEffects(gameStateRef);
   const inventorySystem = useInventory(gameStateRef);
-  const choiceSystem = useCardChoices(gameStateRef, { inventory: inventorySystem });
-  const cardSystem = useCardManagement(
-    gameStateRef,
-    {
-      inventory: inventorySystem,
-      takeDamage: gameEffects.takeDamage,
-      cardChoices: choiceSystem
-    }
-  );
+  const choicesRef = useRef(null);
+
+  const cardSystem = useCardManagement(gameStateRef, {
+    inventory: inventorySystem,
+    takeDamage: gameEffects.takeDamage,
+    cardChoices: choicesRef,
+  });
+
+  const choiceSystem = useCardChoices(gameStateRef, {
+    inventory: inventorySystem,
+  });
+
+  // Update ref with choice system
+  choicesRef.current = choiceSystem;
 
   // Extract required values from systems
   const { inventory, useItem, resetInventory } = inventorySystem;
   const { choicePopup } = choiceSystem;
-  const { deck, currentCard, isFlipped, drawCard, resetCardState, remainingDraws, STANDARD_DECK_SIZE } = cardSystem;
+  const { deck, currentCard, isFlipped, drawCard, resetCardState } = cardSystem;
 
   // Handle theme selection
   const handleThemeChange = (newTheme) => {
     setTheme(newTheme);
-    localStorage.setItem('selectedTheme', newTheme.name.toLowerCase());
+    localStorage.setItem("selectedTheme", newTheme.name.toLowerCase());
   };
 
   // Initialize game when component mounts
@@ -115,13 +120,13 @@ function App() {
           await Promise.all([
             resetGameState(false),
             resetInventory(),
-            resetCardState()
+            resetCardState(),
           ]);
         }
       } catch (error) {
-        console.error('Error initializing game:', error);
+        console.error("Error initializing game:", error);
         if (mounted) {
-          addMessage('Error starting game. Please try again.');
+          addMessage("Error starting game. Please try again.");
         }
       }
     };
@@ -135,83 +140,89 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="app-container">
-          <motion.div
-        className={`game-container ${theme?.particleType}-particles`}
-        style={{
-          background: "linear-gradient(to bottom, #1a1a2e, #162447)"
-        }}
-      >
-        <div className="game-wrapper">
-          {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-4">
-              <h1 
-                className="text-4xl md:text-6xl font-bold mb-4"
-                style={{
-                  textShadow: theme?.titleGlow || '0 0 30px rgba(255,255,255,0.3)'
-                }}
-              >
-                Shadows & Sparks
-              </h1>
-
-              {/* How to Play Button - Moved to top */}
-              <motion.button
-                onClick={toggleInstructions}
-                className="btn-utility mt-4 mb-8"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                aria-expanded={showInstructions}
-                aria-controls="game-instructions"
-              >
-                {showInstructions ? 'Hide Rules' : 'How to Play'}
-              </motion.button>
-
-              {/* Instructions Panel */}
-              {showInstructions && (
-                <Instructions 
-                  isVisible={true}
-                  onToggle={toggleInstructions}
-                />
-              )}
-
-              <p className="text-xl text-gray-300 mb-4">
-                A solo survival card game where you draw, decide, and survive 10 rounds of risk.
-              </p>
-
-              {/* Game Mode Display - Only show in standard mode */}
-              {!isEndless && (
-                <div className="px-6 py-2 rounded-full text-lg font-semibold mb-4
-                              bg-blue-900/50 text-blue-300 border-2 border-blue-500/30">
-                  <span>Standard Mode • {10 - turns} turns remaining</span>
-                </div>
-              )}
-
-              {/* Controls */}
-              <div className="flex justify-center items-center gap-4">
-                <motion.button
-                  onClick={toggleMute}
-                  className="p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700/80 transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label={isMuted ? "Unmute sound effects" : "Mute sound effects"}
+        <motion.div
+          className={`game-container ${theme?.particleType}-particles`}
+          style={{
+            background: "linear-gradient(to bottom, #1a1a2e, #162447)",
+          }}
+        >
+          <div className="game-wrapper">
+            {/* Header Section */}
+            <div className="text-center mb-8">
+              <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-4">
+                <h1
+                  className="text-4xl md:text-6xl font-bold mb-4"
+                  style={{
+                    textShadow:
+                      theme?.titleGlow || "0 0 30px rgba(255,255,255,0.3)",
+                  }}
                 >
-                  {isMuted ? '🔇' : '🔊'}
+                  Shadows & Sparks
+                </h1>
+                <p className="text-xl text-gray-300 mb-4">
+                  A solo survival card game where you draw, decide, and survive
+                  10 rounds of risk.
+                </p>
+                {/* Controls */}
+                <div className="flex justify-center items-center gap-4">
+                  <motion.button
+                    onClick={toggleMute}
+                    className="p-2 rounded-lg bg-gray-500/80 hover:bg-gray-600/80 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label={
+                      isMuted ? "Unmute sound effects" : "Mute sound effects"
+                    }
+                  >
+                    {isMuted ? "🔇" : "🔊"}
+                  </motion.button>
+                </div>
+
+                {/* How to Play Button - Moved to top */}
+                <motion.button
+                  onClick={toggleInstructions}
+                  className="btn-primary mt-4 mb-8"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  aria-expanded={showInstructions}
+                  aria-controls="game-instructions"
+                >
+                  {showInstructions ? "Hide Instructions" : "How to Play"}
                 </motion.button>
+
+                {/* Instructions Panel */}
+                {showInstructions && (
+                  <Instructions
+                    isVisible={true}
+                    onToggle={toggleInstructions}
+                  />
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Game Content */}
-          <div className="w-full max-w-2xl mx-auto">
-            {/* Health and Inventory */}
-            <div className="game-header">
-              <div className="flex flex-col gap-4 w-full sm:w-72">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400">Health:</span>
+            {/* Game Board */}
+            <div className="deck-area game-content my-12 relative">
+              {/* Game Content */}
+              <div className="w-full max-w-4xl mx-auto px-4 py-12">
+                <div className="flex flex-col items-center text-center">
+                  {/* Game Mode Display - Only show in standard mode */}
+                  {!isEndless && (
+                    <div className="text-2xl py-1 shadow inline-flex items-center gap-2">
+                      <span className="text-white">
+                        Standard Mode • {10 - turns} turns remaining
+                      </span>
+                    </div>
+                  )}
+                  {/* Centered Health Bar */}
+                  <div className="my-8">
                     <HealthBar health={health} maxHealth={5} />
                   </div>
-                  <div className="deck-scale">
+                </div>
+
+                {/* Game Area with Deck and Inventory */}
+                <div className="flex flex-row justify-between items-start gap-4 mb-4">
+                  {/* Left Side - Deck */}
+                  <div className="scale-50 origin-top-left sm:scale-75 md:scale-100">
                     <DeckStack
                       count={deck.length}
                       theme={theme}
@@ -220,182 +231,180 @@ function App() {
                       isEndless={isEndless}
                     />
                   </div>
+
+                  {/* Right Side - Inventory */}
+                  {(showInventory ||
+                    inventory.some((item) => item !== null)) && (
+                    <div className="flex flex-col items-end">
+                      <span className="text-base md:text-lg text-gray-400 mb-2">
+                        Inventory:
+                      </span>
+                      <div className="scale-50 origin-top-right sm:scale-75 md:scale-100 flex gap-2">
+                        {inventory.map((item, index) => (
+                          <InventorySlot
+                            key={index}
+                            item={item}
+                            onUseItem={useItem}
+                            slotNumber={index}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentCard?.id || "empty"}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    }}
+                    className="w-full flex justify-center"
+                  >
+                    <Card
+                      card={currentCard}
+                      isFlipped={isFlipped}
+                      isVictory={gameResult === "victory"}
+                      isDefeat={gameResult === "defeat"}
+                      theme={theme}
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
-
-              {/* Show inventory only after obtaining first item or if items exist */}
-              {(showInventory || inventory.some(item => item !== null)) && (
-                <div className="flex flex-col items-center sm:items-end">
-                  <span className="text-base md:text-lg text-gray-400 mb-2">Inventory:</span>
-                  <div className="flex card-spacing">
-                    {inventory.map((item, index) => (
-                      <InventorySlot
-                        key={index}
-                        item={item}
-                        onUseItem={useItem}
-                        slotNumber={index}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Game Board */}
-            <div className="game-content my-12 shadow-lg relative">
-              {/* Draw Counter */}
-              {/* <DrawCounter 
-                current={remainingDraws}
-                total={STANDARD_DECK_SIZE}
-                theme={theme}
-              /> */}
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentCard?.id || 'empty'}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="w-full flex justify-center"
-                >
-                  <Card
-                    card={currentCard}
-                    isFlipped={isFlipped}
-                    isVictory={gameResult === 'victory'}
-                    isDefeat={gameResult === 'defeat'}
-                    theme={theme}
-                  />
-                </motion.div>
-              </AnimatePresence>
-
               <motion.button
-                className="btn-primary relative overflow-hidden text-white font-bold text-shadow-lg pointer-events-auto"
+                className="btn-utility relative overflow-hidden text-white text-shadow-lg pointer-events-auto"
                 onClick={drawCard}
                 onTouchStart={drawCard}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     drawCard();
                   }
                 }}
                 disabled={gameOver || choicePopup.isOpen}
-                style={{
-                  background: `linear-gradient(to bottom, ${theme?.particleColor}40, ${theme?.particleColor}20)`,
-                  backdropFilter: 'blur(4px)',
-                  transition: "all 0.3s ease",
-                  textShadow: "0 2px 4px rgba(0,0,0,0.75)"
-                }}
-                whileHover={gameOver || choicePopup.isOpen ? {} : { scale: 1.05 }}
+                whileHover={
+                  gameOver || choicePopup.isOpen ? {} : { scale: 1.05 }
+                }
                 whileTap={gameOver || choicePopup.isOpen ? {} : { scale: 0.95 }}
                 tabIndex={gameOver || choicePopup.isOpen ? -1 : 0}
                 aria-disabled={gameOver || choicePopup.isOpen}
               >
                 <span className="relative z-10">Draw Card</span>
               </motion.button>
-
-              <ThemeSelector
-                currentTheme={theme}
-                onSelectTheme={handleThemeChange}
-                isOpen={showThemeSelector}
-                onToggle={toggleThemeSelector}
-              />
-
-              <GameLog messages={messages} />
             </div>
           </div>
-        </div>
-      </motion.div>
+          {/* Draw Counter */}
+          <div className="w-full max-w-4xl mx-auto px-4 ">
+            <ThemeSelector
+              currentTheme={theme}
+              onSelectTheme={handleThemeChange}
+              isOpen={showThemeSelector}
+              onToggle={toggleThemeSelector}
+            />
 
-      {/* Overlays Container */}
-      <div className="fixed inset-0 z-50 pointer-events-none">
-        {/* Popups Container */}
-        <div className="relative z-50 pointer-events-auto">
-          {/* Welcome Popup */}
-          <AnimatePresence>
-            {showWelcome && (
-              <div className="fixed inset-0 flex items-center justify-center">
-                <WelcomePopup isOpen={true} onClose={closeWelcome} />
-              </div>
-            )}
-          </AnimatePresence>
+            <GameLog messages={messages} />
+          </div>
+        </motion.div>
 
-          {/* Choice Popup */}
-          <AnimatePresence>
-            {choicePopup.isOpen && (
-              <div className="fixed inset-0 flex items-center justify-center p-4">
-                <div className="w-full max-w-lg">
-                  <ChoicePopup {...choicePopup} />
+        {/* Overlays Container */}
+        <div className="fixed inset-0 z-50 pointer-events-none">
+          {/* Popups Container */}
+          <div className="relative z-50 pointer-events-auto">
+            {/* Welcome Popup */}
+            <AnimatePresence>
+              {showWelcome && (
+                <div className="fixed inset-0 flex items-center justify-center">
+                  <WelcomePopup isOpen={true} onClose={closeWelcome} />
                 </div>
-              </div>
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
 
-          {/* Game Over Modal */}
-          <AnimatePresence>
-            {gameOver && (
-              <div className="fixed inset-0 flex items-center justify-center p-4">
-                <GameOverModal
-                  isOpen={true}
-                  gameResult={gameResult}
-                  isEndless={isEndless}
-                  endlessStats={endlessStats}
-                  turns={turns}
-                          onPlayAgain={async () => {
-            try {
-              // First reset game mode and state flags
-              setIsEndless(false);
-              setGameOver(false);
-              setGameResult(null);
-              
-              // Then reset core stats
-              setHealth(5);
-              setTurns(0);
-              
-              // Finally reset all systems sequentially to ensure proper order
-              await resetGameState(false);
-              await resetInventory();
-              await resetCardState();
-              
-              addMessage('Game restarted! Good luck!');
-            } catch (error) {
-              console.error('Error restarting game:', error);
-              addMessage('Error restarting game. Please try again.');
-              setGameOver(true);
-            }
-          }}
-                  onStartEndless={async () => {
-            if (!endlessModeUnlocked) {
-              addMessage('Win a standard game first to unlock Endless Mode!');
-              return;
-            }
-            try {
-              // First set endless mode and reset state flags
-              setIsEndless(true);
-              setGameOver(false);
-              setGameResult(null);
-              
-              // Then reset core stats
-              setHealth(5);
-              setTurns(0);
-              
-              // Finally reset all systems sequentially
-              await resetGameState(true);
-              await resetInventory();
-              await resetCardState();
-              
-              addMessage('Welcome to Endless Mode! How long can you survive?');
-            } catch (error) {
-              console.error('Error starting endless mode:', error);
-              addMessage('Error starting endless mode. Please try again.');
-              setGameOver(true);
-            }
-          }}
-                />
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
+            {/* Choice Popup */}
+            <AnimatePresence>
+              {choicePopup.isOpen && (
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                  <div className="w-full max-w-lg">
+                    <ChoicePopup {...choicePopup} />
+                  </div>
+                </div>
+              )}
+            </AnimatePresence>
+
+            {/* Game Over Modal */}
+            <AnimatePresence>
+              {gameOver && (
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                  <GameOverModal
+                    isOpen={true}
+                    gameResult={gameResult}
+                    isEndless={isEndless}
+                    endlessStats={endlessStats}
+                    turns={turns}
+                    onPlayAgain={async () => {
+                      try {
+                        // Keep the current game mode when restarting
+                        const currentMode = isEndless;
+                        setGameOver(false);
+                        setGameResult(null);
+
+                        // Then reset core stats
+                        setHealth(5);
+                        setTurns(0);
+
+                        // Finally reset all systems sequentially to ensure proper order
+                        await resetGameState(currentMode);
+                        await resetInventory();
+                        await resetCardState();
+
+                        addMessage("Game restarted! Good luck!");
+                      } catch (error) {
+                        console.error("Error restarting game:", error);
+                        addMessage("Error restarting game. Please try again.");
+                        setGameOver(true);
+                      }
+                    }}
+                    onStartEndless={async () => {
+                      if (!endlessModeUnlocked) {
+                        addMessage(
+                          "Win a standard game first to unlock Endless Mode!"
+                        );
+                        return;
+                      }
+                      try {
+                        // First set endless mode and reset state flags
+                        setIsEndless(true);
+                        setGameOver(false);
+                        setGameResult(null);
+
+                        // Then reset core stats
+                        setHealth(5);
+                        setTurns(0);
+
+                        // Finally reset all systems sequentially
+                        await resetGameState(true);
+                        await resetInventory();
+                        await resetCardState();
+
+                        addMessage(
+                          "Welcome to Endless Mode! How long can you survive?"
+                        );
+                      } catch (error) {
+                        console.error("Error starting endless mode:", error);
+                        addMessage(
+                          "Error starting endless mode. Please try again."
+                        );
+                        setGameOver(true);
+                      }
+                    }}
+                  />
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </ErrorBoundary>

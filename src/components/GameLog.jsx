@@ -84,8 +84,10 @@ const GameLog = ({ messages }) => {
                 ${index === 0
                   ? 'bg-gray-700 shadow-lg scale-100'
                   : 'bg-gray-800/80 scale-98'}
-                ${message.includes('damage') || message.includes('DANGER') 
-                  ? 'border-l-4 border-red-500' 
+                ${message.includes('ERROR') || message.includes('cannot draw')
+                  ? 'error-message'
+                  : message.includes('damage') || message.includes('DANGER')
+                  ? 'border-l-4 border-red-500'
                   : message.includes('heal') || message.includes('safe')
                   ? 'border-l-4 border-green-500'
                   : message.includes('item') || message.includes('Victory')

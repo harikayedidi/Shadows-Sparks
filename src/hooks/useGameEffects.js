@@ -16,19 +16,17 @@ export const useGameEffects = (gameState) => {
 
   const takeDamage = useCallback(async (amount) => {
     if (!amount || amount <= 0) return Promise.resolve();
-
-    return new Promise((resolve) => {
-      // Play damage sound immediately
+    
+    try {
+      audioManager.resetPlayCounts();
       audioManager.play('damage');
 
-      // Update health
       setHealth(currentHealth => {
         const newHealth = Math.max(0, currentHealth - amount);
-        
-        // Check for game over
         if (newHealth === 0 && !gameOver) {
           setGameOver(true);
           setGameResult('defeat');
+          audioManager.resetPlayCounts();
           audioManager.play('defeat');
           
           if (isEndless) {
@@ -43,19 +41,15 @@ export const useGameEffects = (gameState) => {
             addMessage('Game Over! The darkness claims another victim...');
           }
         }
-
         return newHealth;
       });
 
-      // Add damage message
-      if (amount === 1) {
-        addMessage('You take 1 damage!');
-      } else {
-        addMessage(`You take ${amount} damage!`);
-      }
-
-      resolve();
-    });
+      addMessage(amount === 1 ? 'You take 1 damage!' : `You take ${amount} damage!`);
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error in takeDamage:', error);
+      return Promise.reject(error);
+    }
   }, [
     gameOver,
     isEndless,
@@ -69,14 +63,24 @@ export const useGameEffects = (gameState) => {
 
   const checkVictory = useCallback(() => {
     if (!isEndless && turns >= 10 && !gameOver) {
-      setGameOver(true);
-      setGameResult('victory');
-      audioManager.play('victory');
-      addMessage('Victory! You mastered the shadows!');
-      return true;
+      try {
+        // Reset audio manager play counts before victory
+        audioManager.resetPlayCounts();
+        setGameOver(true);
+        setGameResult('victory');
+        audioManager.play('victory');
+        addMessage('Victory! You mastered the shadows!');
+        
+        // Store victory state to unlock endless mode
+        localStorage.setItem('hasWonStandardMode', 'true');
+        return true;
+      } catch (error) {
+        console.error('Error checking victory:', error);
+        addMessage('Error processing victory state');
+      }
     }
     return false;
-  }, [isEndless, turns, gameOver, setGameOver, setGameResult, addMessage]);
+  }, [isEndless, turns, gameOver, setGameOver, setGameResult, addMessage, setEndlessStats]);
 
   const healHealth = useCallback((amount) => {
     if (!amount || amount <= 0) return;

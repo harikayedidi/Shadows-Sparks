@@ -30,7 +30,7 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
           }}
         >
           <div
-            className="w-20 h-32 rounded-lg transform transition-all duration-300"
+            className="w-36 h-48 rounded-lg transform transition-all duration-300"
             style={{
               background: `url(${theme.cardBack}) center/cover`,
               border: `2px solid ${theme.borderColor}60`,
@@ -43,7 +43,7 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
       {/* Interactive top card */}
       <motion.button
         className={`
-          w-20 h-32 rounded-lg relative z-10
+          w-36 h-48 sm:w-36 sm:h-48 rounded-lg relative z-10
           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}
         `}
         disabled={isDisabled}
@@ -66,7 +66,7 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
         {/* Card Count Badge */}
         {count > 0 && !isEndless && (
           <div 
-            className="absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-medium
+            className="absolute -top-2 -right-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-2xl sm:text-xl font-medium
                      backdrop-blur-sm shadow-lg"
             style={{
               background: theme.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
@@ -80,7 +80,7 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
         )}
         
         {/* Inner glow effect */}
-        <div className="absolute inset-2 rounded-lg opacity-30 pulse-glow">
+        <div className="absolute inset-1.5 sm:inset-2 rounded-lg opacity-30">
           <div
             className="absolute inset-0 rounded-lg"
             style={{

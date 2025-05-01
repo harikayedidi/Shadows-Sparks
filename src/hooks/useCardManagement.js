@@ -1,18 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { cardData } from '../data/cards';
 import audioManager from '../utils/audio';
 
 const STANDARD_DECK_SIZE = 10;
 
 export const useCardManagement = (gameState, { inventory, takeDamage, cardChoices }) => {
-  const { isEndless, turns, addMessage, setGameOver, setGameResult } = gameState;
+  const { isEndless, turns, addMessage, setGameOver, setGameResult, incrementTurn } = gameState;
   const { skipNextTurn, setSkipNextTurn, addToInventory, revealInventory } = inventory;
-
-  const [deck, setDeck] = useState([]);
-  const [currentCard, setCurrentCard] = useState(null);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [corruptedDraws, setCorruptedDraws] = useState(0);
-  const [remainingDraws, setRemainingDraws] = useState(isEndless ? 0 : STANDARD_DECK_SIZE);
 
   const createDeckWithDifficulty = useCallback((isEndless = false) => {
     const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
@@ -88,6 +82,12 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
     })));
   }, []);
 
+  // Initialize state after createDeckWithDifficulty is defined
+  const [deck, setDeck] = useState(() => createDeckWithDifficulty(isEndless));
+  const [currentCard, setCurrentCard] = useState(null);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [remainingDraws, setRemainingDraws] = useState(STANDARD_DECK_SIZE);
+
   const handleDamage = useCallback(async (card) => {
     if (!card) return;
 
@@ -102,8 +102,9 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
 
   const handleCardEffect = useCallback(async (card) => {
     if (!card) return;
-
-    // Handle different card types
+    
+    try {
+      // Handle different card types
     if (card.type === 'special') {
       // Special cards should not trigger damage effects
       audioManager.play('itemUse');
@@ -122,7 +123,7 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
     if (card?.effect) {
       switch (card.effect) {
         case 'corrupt_next_2':
-          setCorruptedDraws(2);
+          cardChoices.current?.setCorruptedDraws(2);
           addMessage('Corrupted! Your next 2 draws will be dangerous...');
           // Play corruption sound
           audioManager.play('damage');
@@ -151,11 +152,16 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
             // Play chain reaction sound only once
             audioManager.play('damage');
             
-            // Draw two cards with a slight delay between
-            setTimeout(async () => {
+            // Draw two cards with proper async handling
+            try {
+              await new Promise(resolve => setTimeout(resolve, 800));
               await drawCard();
-              setTimeout(drawCard, 800);
-            }, 800);
+              await new Promise(resolve => setTimeout(resolve, 800));
+              await drawCard();
+            } catch (error) {
+              console.error('Error in chain reaction draw:', error);
+              addMessage('Chain reaction was interrupted');
+            }
           }
           break;
           
@@ -165,61 +171,107 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
           }
       }
     }
-  }, [handleDamage, addMessage, revealInventory, addToInventory]);
+    } catch (error) {
+      console.error('Error handling card effect:', error);
+      addMessage('An error occurred while handling the card effect.');
+    }
+  }, [handleDamage, addMessage, revealInventory, addToInventory, setSkipNextTurn]);
 
   const drawCard = useCallback(async () => {
-    if (skipNextTurn) {
-      setSkipNextTurn(false);
-      addMessage('Turn skipped (hiding in shadows).');
-      return;
-    }
+    try {
+      // Prevent drawing if game is in transition
+      if (gameState.gameOver) return;
+      if (cardChoices?.current?.choicePopup?.isOpen) return;
 
-    // In endless mode, replenish deck when empty
-    if (deck.length === 0 && isEndless) {
-      const newDeck = createDeckWithDifficulty(true);
+      // Handle skip turn state
+      if (skipNextTurn) {
+        setSkipNextTurn(false);
+        addMessage('Turn skipped (hiding in shadows).');
+        return;
+      }
+
+      // Check if we need to replenish deck or handle game end
+      if (deck.length === 0) {
+        if (isEndless) {
+          const newDeck = createDeckWithDifficulty(true);
+          await new Promise(resolve => {
+            setDeck(newDeck);
+            addMessage('The shadows shift... a new set of rooms appears.');
+            resolve();
+          });
+          // Continue with the draw after deck is replenished
+          return drawCard();
+        } else {
+          setGameOver(true);
+          setGameResult('victory');
+          addMessage('You have survived the shadows!');
+          return;
+        }
+      }
+
+      if (deck.length === 1 && !isEndless) {
+        setGameOver(true);
+        setGameResult('victory');
+        addMessage('You have survived the shadows!');
+        return;
+      }
+
+      // Increment turn counter before any card effects
+      if (!skipNextTurn) {
+        incrementTurn();
+      }
+      
+      // Update remaining draws count for standard mode
+      if (!isEndless) {
+        setRemainingDraws(prev => Math.max(0, prev - 1));
+      }
+
+      // Draw a card
+      const newDeck = [...deck];
+      let drawnCard;
+
+      if (cardChoices.current?.corruptedDraws > 0) {
+        const trapCard = cardData.dangerousTraps[
+          Math.floor(Math.random() * cardData.dangerousTraps.length)
+        ];
+        drawnCard = { ...trapCard, id: Math.random() };
+        cardChoices.current.setCorruptedDraws(prev => prev - 1);
+        addMessage('The corruption manifests!');
+      } else {
+        drawnCard = newDeck.pop();
+      }
+
       setDeck(newDeck);
-      addMessage('The shadows shift... a new set of rooms appears.');
-    }
+      audioManager.play('cardFlip');
 
-    // Check for standard mode victory
-    if (deck.length === 1 && !isEndless) {
-      // ... [victory logic remains the same]
-      return;
-    }
+      // Card reveal sequence with error handling
+      try {
+        setIsFlipped(false);
+        setCurrentCard(null);
 
-    // Don't track remaining draws in endless mode
-    if (!isEndless) {
-      setRemainingDraws(prev => prev - 1);
-    }
+        // Wait for state updates
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        setCurrentCard(drawnCard);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setIsFlipped(true);
+      } catch (error) {
+        console.error('Error in card reveal sequence:', error);
+        // Reset state on error
+        setIsFlipped(false);
+        setCurrentCard(null);
+        throw new Error('Card reveal failed');
+      }
 
-    // Draw a card
-    const newDeck = [...deck];
-    let drawnCard;
+      // Handle card effects
+      if (drawnCard?.type === 'special' && drawnCard.title.toLowerCase().includes('skip')) {
+        setSkipNextTurn(true);
+        addMessage('You found a Skip card! Next turn will be skipped.');
+        return;
+      }
 
-    if (corruptedDraws > 0) {
-      const trapCard = cardData.dangerousTraps[
-        Math.floor(Math.random() * cardData.dangerousTraps.length)
-      ];
-      drawnCard = { ...trapCard, id: Math.random() };
-      setCorruptedDraws(prev => prev - 1);
-      addMessage('The corruption manifests!');
-    } else {
-      drawnCard = newDeck.pop();
-    }
-
-    setDeck(newDeck);
-    audioManager.play('cardFlip');
-
-    setIsFlipped(false);
-    setCurrentCard(null);
-
-    // Reveal the card and handle its effects
-    setTimeout(async () => {
-      setCurrentCard(drawnCard);
-      setIsFlipped(true);
-
-      if (drawnCard?.hasChoice && cardChoices) {
-        cardChoices.showChoice(
+      if (drawnCard?.hasChoice && cardChoices?.current) {
+        cardChoices.current.showChoice(
           drawnCard.title,
           drawnCard.choices,
           () => handleCardEffect(drawnCard)
@@ -227,18 +279,23 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       } else if (drawnCard) {
         await handleCardEffect(drawnCard);
       }
-    }, 100);
+    } catch (error) {
+      console.error('Error drawing card:', error);
+      addMessage('An error occurred while drawing a card.');
+    }
   }, [
     deck,
     skipNextTurn,
-    corruptedDraws,
     cardChoices,
     handleCardEffect,
     addMessage,
     setSkipNextTurn,
     isEndless,
     setGameOver,
-    setGameResult
+    setGameResult,
+    createDeckWithDifficulty,
+    incrementTurn,
+    setRemainingDraws
   ]);
 
   const resetCardState = useCallback(async () => {
@@ -247,15 +304,17 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       setDeck(initialDeck);
       setCurrentCard(null);
       setIsFlipped(false);
-      setCorruptedDraws(0);
-      setRemainingDraws(isEndless ? 0 : STANDARD_DECK_SIZE);
-      addMessage(isEndless ? 'Endless deck ready.' : 'Deck shuffled and ready.');
+      if (cardChoices.current) {
+        cardChoices.current.setCorruptedDraws(0);
+      }
+      setRemainingDraws(STANDARD_DECK_SIZE);
+      addMessage('Deck shuffled and ready.');
       return Promise.resolve();
     } catch (error) {
       console.error('Error resetting card state:', error);
       return Promise.reject(error);
     }
-  }, [createDeckWithDifficulty, addMessage, isEndless]);
+  }, [createDeckWithDifficulty, addMessage, isEndless, setRemainingDraws]);
 
   return {
     deck,

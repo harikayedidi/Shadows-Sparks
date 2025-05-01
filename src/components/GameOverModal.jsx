@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 
+import audioManager from '../utils/audio';
+
 const GameOverModal = ({
   isOpen,
   gameResult,
@@ -17,6 +19,12 @@ const GameOverModal = ({
   };
 
   if (!isOpen) return null;
+
+  // Play victory sound when modal opens with victory state
+  if (gameResult === 'victory') {
+    audioManager.resetPlayCounts();
+    audioManager.play('victory');
+  }
 
   return (
     <div 

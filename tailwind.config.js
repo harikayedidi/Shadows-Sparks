@@ -5,6 +5,9 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    fontFamily: {
+      sans: ['Poppins', 'sans-serif'],
+    },
     extend: {
       animation: {
         'card-flip': 'flip 0.6s ease-in-out',
@@ -33,7 +36,8 @@ export default {
       },
       boxShadow: {
         'glow-green': '0 0 15px rgba(34,197,94,0.3)',
-        'glow-red': '0 0 15px rgba(239,68,68,0.3)',
+        'glow-red': '0 0 15px rgba(239,68,68,0.5)',
+        'glow-heart': '0 0 20px rgba(239,68,68,0.6)',
         'glow-yellow': '0 0 15px rgba(234,179,8,0.3)',
         'glow-rainbow': '0 0 20px rgba(167,139,250,0.3)',
       },

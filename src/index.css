@@ -140,6 +140,26 @@
     @apply px-4 py-6 sm:p-6 md:p-8;
   }
 
+  .deck-area {
+    @apply p-6 rounded-xl;
+    @apply border-2 border-gray-700/50;
+    @apply bg-gray-800/40 backdrop-blur-sm;
+    @apply shadow-lg;
+    @apply flex flex-col items-center gap-4;
+    @apply pointer-events-none;
+  }
+
+  .deck-area > * {
+    @apply pointer-events-auto;
+  }
+
+  .error-message {
+    @apply bg-red-900/60 text-red-100;
+    @apply border-l-8 border-red-600;
+    @apply shadow-[0_0_15px_rgba(239,68,68,0.3)];
+    @apply animate-pulse;
+  }
+
   .game-wrapper {
     @apply flex flex-col w-full max-w-4xl mx-auto space-y-6;
   }
@@ -208,6 +228,10 @@
     @apply flex gap-2;
     @apply text-xl sm:text-2xl;
     @apply touch-manipulation;
+    @apply p-4 rounded-lg;
+    @apply border-2 border-gray-700/50;
+    @apply bg-gray-800/40 backdrop-blur-sm;
+    @apply shadow-lg;
   }
 
   .game-button {
@@ -223,6 +247,7 @@
     @apply hover:shadow-xl active:shadow-md;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
     @apply disabled:hover:bg-blue-600 disabled:active:shadow-lg;
+    @apply border-2 border-blue-500/50;
   }
 
   .choice-button {
@@ -262,8 +287,8 @@
   }
 
   .game-log {
-    @apply w-full max-w-xl mx-auto;
-    @apply h-48 overflow-y-auto;
+    @apply w-full max-w-2xl mx-auto;
+    @apply h-60 overflow-y-auto;
     @apply rounded-lg bg-gray-800/95;
     @apply p-4;
     @apply border border-gray-700;

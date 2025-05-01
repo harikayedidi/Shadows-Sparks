@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import audioManager from '../utils/audio';
 
 export const useGameState = () => {
   // Core game state
@@ -11,12 +12,15 @@ export const useGameState = () => {
   const [messages, setMessages] = useState([]);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Update endless turns when turns change in endless mode
-  useEffect(() => {
+  // Increment turn count
+  const incrementTurn = useCallback(() => {
     if (isEndless) {
-      setEndlessTurns(turns);
+      setEndlessTurns(prev => prev + 1);
+      setTurns(prev => prev + 1);
+    } else {
+      setTurns(prev => prev + 1);
     }
-  }, [turns, isEndless]);
+  }, [isEndless]);
 
   // Endless mode state
   const [endlessModeUnlocked, setEndlessModeUnlocked] = useState(() => {
@@ -46,7 +50,11 @@ export const useGameState = () => {
 
   // Sound handling
   const toggleMute = useCallback(() => {
-    setIsMuted(prev => !prev);
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      audioManager.setMuted(newMuted);
+      return newMuted;
+    });
   }, []);
 
   // Game reset
@@ -106,6 +114,7 @@ export const useGameState = () => {
     // Actions
     addMessage,
     toggleMute,
-    resetGameState
+    resetGameState,
+    incrementTurn
   };
 };

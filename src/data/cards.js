@@ -27,42 +27,57 @@ export const cardData = {
   choiceCards: [
     {
       type: 'choice',
-      title: 'Cursed Chest',
-      description: 'A mysterious chest radiates dark energy.',
-      hasChoice: true,
-      choices: [
-        { text: 'Open the chest', description: 'Risk damage to gain a special item', action: 'damage', reward: 'item' },
-        { text: 'Leave it alone', description: 'Better safe than sorry', action: 'nothing' }
-      ]
-    },
-    {
-      type: 'choice',
-      title: 'Dark Bargain',
-      description: 'A shadowy figure offers a deal.',
+      title: 'Gamble Rune',
+      description: 'A rune pulses with chaotic magic.',
       hasChoice: true,
       choices: [
         {
-          text: 'Accept the deal',
-          description: 'Discard an item to heal 1 HP',
-          action: 'discard_item',
-          reward: 'heal',
-          requiresInventory: true
+          text: 'Touch it',
+          description: '50% chance: gain a special item OR take 1 damage.',
+          action: 'random_reward_or_damage'
         },
         {
-          text: 'Refuse',
-          description: 'Take 1 damage instead',
-          action: 'damage'
+          text: 'Walk away',
+          description: 'Ignore the rune and move on.',
+          action: 'nothing'
         }
       ]
     },
     {
       type: 'choice',
-      title: 'Fork in the Path',
-      description: 'Two paths lie ahead, which do you choose?',
+      title: 'Wishing Flame',
+      description: 'The flame offers power at a cost.',
       hasChoice: true,
       choices: [
-        { text: 'Dark Path', description: 'Draw another card', action: 'draw' },
-        { text: 'Light Path', description: 'Heal 1 HP', action: 'heal' }
+        {
+          text: 'Burn 1 HP',
+          description: 'Gain 1 special item.',
+          action: 'damage_reward',
+          reward: 'item'
+        },
+        {
+          text: 'Refuse',
+          description: 'Leave unharmed.',
+          action: 'nothing'
+        }
+      ]
+    },
+    {
+      type: 'choice',
+      title: 'Twisted Mirror',
+      description: 'A vision of safety tempts you.',
+      hasChoice: true,
+      choices: [
+        {
+          text: 'Trust it',
+          description: 'Heal 1 HP, but the next card will be a trap.',
+          action: 'heal_then_corrupt'
+        },
+        {
+          text: 'Smash it',
+          description: 'Avoid the risk.',
+          action: 'nothing'
+        }
       ]
     }
   ]

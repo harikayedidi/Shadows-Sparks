@@ -60,7 +60,7 @@ const ChoiceModal = ({ isOpen, onClose, onSkip, onSave }) => {
                 </div>
               </div>
 
-              <p className="text-center text-sm text-gray-400 italic">
+              <p className="text-center text-sm text-gray-300 italic">
                 This choice won't appear again until your next adventure
               </p>
             </div>

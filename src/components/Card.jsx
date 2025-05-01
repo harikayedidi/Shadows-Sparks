@@ -31,21 +31,31 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
 
     // Fallback to default card type colors
     const typeColor = cardTypeColors[card.type] || cardTypeColors.darkRoom;
+    const glowEffects = {
+      lightTrap: 'shadow-[0_0_16px_white]',
+      darkRoom: 'shadow-[0_0_12px_#333]',
+      special: 'shadow-yellow-400',
+      inventory: 'animate-pulse shadow-[0_0_12px_#4f46e5]'
+    };
+
     return {
-      glow: card.type === 'special'
-        ? '0 0 30px rgba(147, 51, 234, 0.5)'
-        : typeColor.glow,
-      border: card.type === 'special'
-        ? 'rgba(147, 51, 234, 0.6)'
-        : `${typeColor.base}60`,
-      background: card.type === 'special'
-        ? 'linear-gradient(45deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2))'
-        : theme?.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
-      animation: card.type === 'special'
-        ? 'special-card-glow 3s infinite'
+      glow: card.type === 'inventory'
+        ? '0 0 12px rgb(79, 70, 229)'
+        : card.type === 'special'
+        ? '0 0 16px #eab308'
         : card.type === 'lightTrap'
-        ? 'flicker 2s infinite'
-        : 'none'
+        ? '0 0 16px white'
+        : card.type === 'darkRoom'
+        ? '0 0 12px #333'
+        : typeColor.glow,
+      border: `${typeColor.base}60`,
+      background: theme?.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
+      animation: card.type === 'inventory'
+        ? 'pulse 2s infinite'
+        : card.type === 'special'
+        ? 'special-card-glow 3s infinite'
+        : 'none',
+      className: glowEffects[card.type] || ''
     };
   };
 
@@ -54,7 +64,7 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
   return (
     <motion.div
       className={`
-        relative w-64 h-96 rounded-xl shadow-xl card-reveal
+        relative w-48 h-72 sm:w-56 sm:h-80 md:w-64 md:h-96 rounded-xl shadow-xl card-reveal
         ${isFlipped ? 'cursor-default' : 'cursor-pointer'}
         ${card.type === 'special' ? 'special-effect' : ''}
         ${card.type === 'lightTrap' ? 'light-trap' : ''}
@@ -62,7 +72,7 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
       `}
       initial={false}
       animate={{
-        rotateY: isFlipped ? 180 : 0,
+        rotateY: isFlipped ? 0 : 180,
         scale: isFlipped ? 1 : 0.95
       }}
       transition={{
@@ -76,10 +86,14 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
     >
       {/* Card Front */}
       <motion.div
-        className="absolute inset-0 rounded-xl bg-opacity-90 transition-all duration-300"
+        className={`
+          absolute inset-0 rounded-xl bg-opacity-90
+          transition-all duration-300
+          ${cardStyle.className || ''}
+        `}
         style={{
           backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
+          transform: 'rotateY(0deg)',
           boxShadow: cardStyle.glow,
           border: `2px solid ${cardStyle.border}`,
           background: cardStyle.background,
@@ -88,7 +102,7 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
       >
         <div className="p-6 flex flex-col h-full">
           {/* Card Title */}
-          <h3 className="text-xl md:text-2xl font-bold text-center mb-4 text-white">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-2 sm:mb-4 text-white">
             {card.title}
           </h3>
 
@@ -116,7 +130,7 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
           </div>
 
           {/* Card Description */}
-          <p className="text-base md:text-lg text-gray-300 text-center flex-grow">
+          <p className="text-sm sm:text-base md:text-lg text-gray-300 text-center flex-grow">
             {card.description}
           </p>
 
@@ -155,6 +169,7 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
         className="absolute inset-0 rounded-xl transform hover:scale-105 transition-all duration-300"
         style={{
           backfaceVisibility: 'hidden',
+          transform: 'rotateY(180deg)',
           background: theme?.cardBack ? `url(${theme.cardBack}) center/cover` : '#1a1a2e',
           border: `2px solid ${theme?.borderColor || '#ffffff'}80`,
           boxShadow: `0 0 15px ${theme?.particleColor || '#ffffff'}40`
