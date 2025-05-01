@@ -42,21 +42,22 @@ export const useDynamicDeck = () => {
     return deck;
   }, []);
 
-  const calculateDifficulty = useCallback((health, inventory, turnsWithoutDamage) => {
+  const calculateDifficulty = useCallback((health, inventory, turnsWithoutDamage, isEndless = false, turns = 0) => {
     let score = 0;
     
-    // Health status affects difficulty
+    // Base difficulty calculation
     score += (health / 5) * 2; // 0-2 points based on health
+    score += inventory.filter(i => i !== null).length * 0.5; // 0-1 points for inventory
+    score += Math.min(turnsWithoutDamage / 3, 1); // 0-1 points for no-damage streaks
     
-    // Full inventory indicates good performance
-    if (inventory.every(item => item !== null)) {
-      score += 1;
+    // Endless mode scaling
+    if (isEndless) {
+      // Increase difficulty every 5 turns
+      const endlessBonus = Math.floor(turns / 5) * 0.5;
+      score += Math.min(endlessBonus, 2); // Cap endless bonus at 2 points
     }
     
-    // Long streaks without damage increase difficulty
-    score += Math.min(turnsWithoutDamage / 3, 1); // Up to 1 point for no-damage streaks
-    
-    return score; // 0-4 scale: 0-1 struggling, 2-3 balanced, 3-4 excelling
+    return Math.min(score, 4); // Keep within 0-4 scale
   }, []);
 
   const updateDeckStats = useCallback((cardType) => {

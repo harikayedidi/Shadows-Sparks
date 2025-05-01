@@ -10,35 +10,30 @@ const GameLog = ({ messages }) => {
   useEffect(() => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const { scrollHeight, clientHeight, scrollTop } = container;
-      const isScrolledNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
-
-      // Only auto-scroll if user hasn't manually scrolled up
-      if (!userScrollRef.current || isScrolledNearBottom) {
-        // Use requestAnimationFrame for smoother scrolling
-        requestAnimationFrame(() => {
-          container.scrollTo({
-            top: scrollHeight,
-            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-          });
+      
+      // Always scroll to top for new messages
+      requestAnimationFrame(() => {
+        container.scrollTo({
+          top: 0,
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
         });
-      }
+      });
     }
   }, [messages]);
 
-  // Track user scrolling
+  // Track user scrolling - modified for top-first layout
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const { scrollTop } = container;
       
-      // Detect if user is scrolling up
-      if (scrollTop < lastScrollTopRef.current) {
+      // Detect if user is scrolling down
+      if (scrollTop > lastScrollTopRef.current) {
         userScrollRef.current = true;
       }
       
-      // Reset when scrolled to bottom
-      if (container.scrollHeight - (scrollTop + container.clientHeight) < 10) {
+      // Reset when scrolled to top
+      if (scrollTop === 0) {
         userScrollRef.current = false;
       }
       
@@ -71,7 +66,7 @@ const GameLog = ({ messages }) => {
         onScroll={handleScroll}
       >
         <AnimatePresence mode="popLayout">
-          {messages.map((message, index) => (
+          {[...messages].reverse().map((message, index) => (
             <motion.div
               key={`${index}-${message}`}
               initial={{ opacity: 0, y: 20 }}
@@ -86,8 +81,8 @@ const GameLog = ({ messages }) => {
               className={`
                 py-2 px-3 rounded
                 transform transition-colors duration-200
-                ${index === messages.length - 1 
-                  ? 'bg-gray-700 shadow-lg scale-100' 
+                ${index === 0
+                  ? 'bg-gray-700 shadow-lg scale-100'
                   : 'bg-gray-800/80 scale-98'}
                 ${message.includes('damage') || message.includes('DANGER') 
                   ? 'border-l-4 border-red-500' 

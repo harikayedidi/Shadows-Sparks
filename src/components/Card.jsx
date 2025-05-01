@@ -1,173 +1,174 @@
 import { motion } from 'framer-motion';
+import { cardTypeColors } from '../data/themes';
 
-const Card = ({ card, isFlipped, isVictory, isDefeat, theme }) => {
-  const cardVariants = {
-    hidden: {
-      y: 50,
-      opacity: 0,
-      scale: 0.9,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30
-      }
-    },
-    visible: {
-      y: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-        duration: 0.5
-      }
-    },
-    victory: {
-      scale: [1, 1.2, 1],
-      rotate: [0, 10, -10, 0],
-      transition: {
-        duration: 1,
-        repeat: 1,
-        ease: "easeInOut"
-      }
-    },
-    defeat: {
-      scale: [1, 0.9],
-      opacity: [1, 0.7],
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
+const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add default empty object for theme
+  if (!card) return null;
 
-  const getCardStyles = () => {
-    if (!card) {
+  const getCardStyle = () => {
+    if (isVictory) {
       return {
-        className: 'card-base bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700 text-gray-400',
-        style: {
-          boxShadow: '0 0 15px rgba(75, 85, 99, 0.3)'
-        }
+        glow: '0 0 30px #86efac',
+        border: '#86efac60',
+        background: theme?.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
+        animation: 'pulse 2s infinite'
+      };
+    }
+    
+    if (isDefeat) {
+      return {
+        glow: '0 0 30px #ef4444',
+        border: '#ef444460',
+        background: theme?.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
+        animation: 'flicker 2s infinite'
       };
     }
 
-    const baseClass = 'card-base relative overflow-hidden bg-black/40 backdrop-blur-sm';
-    let borderColor = '';
-    let shadowColor = '';
-
-    const getThemeColors = () => {
-      if (theme?.borderGlow) {
-        switch (card.type) {
-          case 'dark':
-            return { color: theme.borderGlow.safe, opacity: 0.3 };
-          case 'light':
-            return { color: theme.borderGlow.trap, opacity: 0.3 };
-          case 'item':
-            return { color: theme.borderGlow.item, opacity: 0.3 };
-          case 'event':
-            return { special: true };
-        }
-      }
-      // Fallback colors if no theme
-      switch (card.type) {
-        case 'dark':
-          return { color: '#00ff9d', opacity: 0.3 };
-        case 'light':
-          return { color: '#ff4d4d', opacity: 0.3 };
-        case 'item':
-          return { color: '#ffd700', opacity: 0.3 };
-        case 'event':
-          return { special: true };
-      }
-    };
-
-    const themeColors = getThemeColors();
-    if (themeColors?.special) {
-      return {
-        className: `${baseClass} rainbow-border`,
-        style: {
-          border: '2px solid transparent'
-        }
-      };
+    // Use theme-specific card styles if available
+    const themeStyle = theme?.cardStyles?.[card.type];
+    if (themeStyle) {
+      return themeStyle;
     }
 
-    if (themeColors) {
-      borderColor = themeColors.color;
-      shadowColor = themeColors.color;
-    }
-
+    // Fallback to default card type colors
+    const typeColor = cardTypeColors[card.type] || cardTypeColors.darkRoom;
     return {
-      className: baseClass,
-      style: {
-        border: `2px solid ${borderColor}`,
-        boxShadow: `0 0 15px ${shadowColor}`
-      }
+      glow: card.type === 'special'
+        ? '0 0 30px rgba(147, 51, 234, 0.5)'
+        : typeColor.glow,
+      border: card.type === 'special'
+        ? 'rgba(147, 51, 234, 0.6)'
+        : `${typeColor.base}60`,
+      background: card.type === 'special'
+        ? 'linear-gradient(45deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2))'
+        : theme?.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
+      animation: card.type === 'special'
+        ? 'special-card-glow 3s infinite'
+        : card.type === 'lightTrap'
+        ? 'flicker 2s infinite'
+        : 'none'
     };
   };
 
-  if (!card) {
-    return (
-      <motion.div
-        className="card-base bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700 text-gray-400
-                   flex items-center justify-center cursor-pointer"
-        style={{
-          boxShadow: '0 0 15px rgba(75, 85, 99, 0.3)'
-        }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        role="button"
-        aria-label="Draw pile - click to draw a card"
-        tabIndex={0}
-      >
-        <p className="text-center sm:text-sm md:text-base">Draw a card</p>
-      </motion.div>
-    );
-  }
-
-  const animate = isVictory ? "victory" : isDefeat ? "defeat" : isFlipped ? "visible" : "hidden";
-  const cardStyles = getCardStyles();
-  const combinedStyle = {
-    ...cardStyles.style
-  };
+  const cardStyle = getCardStyle();
 
   return (
     <motion.div
-      className={cardStyles.className}
-      style={combinedStyle}
-      initial="hidden"
-      animate={animate}
-      variants={cardVariants}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.98 }}
-      role="article"
-      aria-label={`${card.type} card: ${card.title}`}
+      className={`
+        relative w-64 h-96 rounded-xl shadow-xl card-reveal
+        ${isFlipped ? 'cursor-default' : 'cursor-pointer'}
+        ${card.type === 'special' ? 'special-effect' : ''}
+        ${card.type === 'lightTrap' ? 'light-trap' : ''}
+        ${card.type === 'darkRoom' ? 'dark-room' : ''}
+      `}
+      initial={false}
+      animate={{
+        rotateY: isFlipped ? 180 : 0,
+        scale: isFlipped ? 1 : 0.95
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 25
+      }}
+      style={{
+        transformStyle: 'preserve-3d'
+      }}
     >
-      <div className="relative z-10 h-full flex flex-col items-center justify-center p-6 text-white">
-        <motion.h2 
-          className="text-xl font-bold mb-4 sm:text-2xl text-center"
-          initial={false}
-          animate={isVictory ? { 
-            scale: [1, 1.1, 1], 
-            transition: { repeat: Infinity, duration: 2 } 
-          } : {}}
-        >
-          {card.title}
-        </motion.h2>
-        <p className="text-center sm:text-base md:text-lg">
-          {card.description}
-        </p>
-        {card.type === 'item' && (
-          <motion.div 
-            className="mt-4 text-sm italic opacity-80"
-            initial={{ opacity: 0.6 }}
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            Click to use from inventory
-          </motion.div>
-        )}
-      </div>
+      {/* Card Front */}
+      <motion.div
+        className="absolute inset-0 rounded-xl bg-opacity-90 transition-all duration-300"
+        style={{
+          backfaceVisibility: 'hidden',
+          transform: 'rotateY(180deg)',
+          boxShadow: cardStyle.glow,
+          border: `2px solid ${cardStyle.border}`,
+          background: cardStyle.background,
+          animation: cardStyle.animation
+        }}
+      >
+        <div className="p-6 flex flex-col h-full">
+          {/* Card Title */}
+          <h3 className="text-xl md:text-2xl font-bold text-center mb-4 text-white">
+            {card.title}
+          </h3>
+
+          {/* Card Type Icon */}
+          <div className={`text-4xl text-center mb-4 ${card.type === 'special' ? 'special-icon' : ''}`}>
+            {card.type === 'lightTrap' && '🔦'}
+            {card.type === 'darkRoom' && '🌑'}
+            {card.type === 'special' && (
+              <motion.span
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 360],
+                  opacity: [1, 0.8, 1]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                🌈
+              </motion.span>
+            )}
+            {card.type === 'choice' && '🟡'}
+          </div>
+
+          {/* Card Description */}
+          <p className="text-base md:text-lg text-gray-300 text-center flex-grow">
+            {card.description}
+          </p>
+
+          {/* Card Effects */}
+          {card.damage && (
+            <div 
+              className="mt-4 text-center font-medium" 
+              style={{ color: theme?.cardStyles?.lightTrap?.border || '#ffffff80' }}
+            >
+              Damage: {card.damage}
+            </div>
+          )}
+
+          {card.hasChoice && (
+            <div 
+              className="mt-4 text-center font-medium"
+              style={{ color: theme?.cardStyles?.choice?.border || '#fcd34d80' }}
+            >
+              Choose your action...
+            </div>
+          )}
+
+          {card.effect && !card.hasChoice && (
+            <div 
+              className="mt-4 text-center font-medium"
+              style={{ color: theme?.cardStyles?.special?.border || '#60a5fa80' }}
+            >
+              Special Effect
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Card Back */}
+      <motion.div
+        className="absolute inset-0 rounded-xl transform hover:scale-105 transition-all duration-300"
+        style={{
+          backfaceVisibility: 'hidden',
+          background: theme?.cardBack ? `url(${theme.cardBack}) center/cover` : '#1a1a2e',
+          border: `2px solid ${theme?.borderColor || '#ffffff'}80`,
+          boxShadow: `0 0 15px ${theme?.particleColor || '#ffffff'}40`
+        }}
+      >
+        <div className="absolute inset-2 rounded-lg border-2 border-gray-600/30">
+          <div
+            className="absolute inset-0 rounded-lg opacity-30"
+            style={{
+              background: `radial-gradient(circle at center, ${theme?.particleColor || '#ffffff'}, transparent)`
+            }}
+          />
+        </div>
+      </motion.div>
     </motion.div>
   );
 };

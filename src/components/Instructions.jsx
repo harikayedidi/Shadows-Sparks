@@ -1,85 +1,83 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { motion } from 'framer-motion';
 
-const Instructions = () => {
-  const [isOpen, setIsOpen] = useState(true);
+export const Instructions = ({ isVisible, onToggle }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onToggle();
+    }
+  };
+
+  if (!isVisible) return null;
 
   return (
-    <div className="w-full">
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 mb-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium 
-                  transition-colors duration-200 flex items-center justify-center gap-2"
-        whileTap={{ scale: 0.98 }}
-        aria-expanded={isOpen}
-        aria-controls="instructions-panel"
-      >
-        {isOpen ? 'Hide Instructions' : 'Show Instructions'}
-      </motion.button>
+    <motion.div
+      id="game-instructions"
+      className="w-full max-w-2xl mx-auto bg-gray-900/90 rounded-lg p-6 mb-6 backdrop-blur"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      role="region"
+      aria-label="Game Instructions"
+    >
+      {/* Game Description */}
+      <div className="mb-6 text-center">
+        <h2 className="text-xl font-bold text-gray-200 mb-2">
+          How to Play
+        </h2>
+        <p className="text-gray-400 text-sm">
+          Draw, decide, and survive 10 rounds of risk.
+        </p>
+      </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            id="instructions-panel"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="bg-gray-800/95 backdrop-blur-sm rounded-lg p-6 shadow-xl">
-              <h2 className="text-xl font-bold mb-4 text-yellow-400">How to Play</h2>
-              <div className="space-y-4">
-                <section>
-                  <h3 className="font-bold mb-2 text-gray-200">Goal</h3>
-                  <p className="text-gray-300">Survive 10 rounds without losing all HP.</p>
-                </section>
+      {/* Core Rules */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section>
+          <h3 className="font-bold text-gray-200 mb-2">Starting Resources</h3>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li>• 5 lives (HP)</li>
+            <li>• 10 cards per round</li>
+            <li>• 2 Special Cards to discover</li>
+          </ul>
+        </section>
 
-                <section>
-                  <h3 className="font-bold mb-2 text-gray-200">Card Types</h3>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-gradient-to-r from-green-600 to-green-400 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
-                      <span className="text-gray-300">Safe passage</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-600 to-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]" />
-                      <span className="text-gray-300">Dangerous traps</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-300 shadow-[0_0_15px_rgba(234,179,8,0.3)]" />
-                      <span className="text-gray-300">Usable items</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 animate-pulse" />
-                      <span className="text-gray-300">Special encounters</span>
-                    </li>
-                  </ul>
-                </section>
+        <section>
+          <h3 className="font-bold text-gray-200 mb-2">Card Types</h3>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li className="flex items-center gap-2">
+              <span>🔦</span> Light Traps - Deal damage
+            </li>
+            <li className="flex items-center gap-2">
+              <span>🌑</span> Dark Rooms - Safe passage
+            </li>
+            <li className="flex items-center gap-2">
+              <span>🌈</span> Special Cards - Storable items
+            </li>
+            <li className="flex items-center gap-2">
+              <span>🟡</span> Choice Cards - Pick your path
+            </li>
+          </ul>
+        </section>
 
-                <section>
-                  <h3 className="font-bold mb-2 text-gray-200">Health & Inventory</h3>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
-                    <li>Start with 5 HP (Health Points)</li>
-                    <li>Can hold up to 2 items at once</li>
-                    <li>Click items in inventory to use them</li>
-                  </ul>
-                </section>
+        <section>
+          <h3 className="font-bold text-gray-200 mb-2">Victory Conditions</h3>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li>• Survive 10 card draws</li>
+            <li>• Keep HP above 0</li>
+            <li>• Win to unlock Endless Mode</li>
+          </ul>
+        </section>
 
-                <section>
-                  <h3 className="font-bold mb-2 text-gray-200">Tips</h3>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
-                    <li>Watch for red glowing cards</li>
-                    <li>Keep healing items for emergencies</li>
-                    <li>Plan your moves carefully</li>
-                  </ul>
-                </section>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        <section>
+          <h3 className="font-bold text-gray-200 mb-2">Tips</h3>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li>• Use special items wisely</li>
+            <li>• Save HP for later rounds</li>
+            <li>• Consider each choice carefully</li>
+          </ul>
+        </section>
+      </div>
+    </motion.div>
   );
 };
 
