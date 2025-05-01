@@ -205,14 +205,12 @@ function App() {
               {/* Game Content */}
               <div className="w-full max-w-4xl mx-auto px-4 py-12">
                 <div className="flex flex-col items-center text-center">
-                  {/* Game Mode Display - Only show in standard mode */}
-                  {!isEndless && (
-                    <div className="text-2xl py-1 shadow inline-flex items-center gap-2">
-                      <span className="text-white">
-                        Standard Mode • {10 - turns} turns remaining
-                      </span>
-                    </div>
-                  )}
+                  {/* Game Mode Display */}
+                  <div className="text-2xl py-1 shadow inline-flex items-center gap-2">
+                    <span className="text-white">
+                      {isEndless ? ("Endless Mode • " + turns + " turns survived") : ("Standard Mode • " + (10 - turns) + " turns remaining")}
+                    </span>
+                  </div>
                   {/* Centered Health Bar */}
                   <div className="my-8">
                     <HealthBar health={health} maxHealth={5} />
@@ -346,8 +344,8 @@ function App() {
                     turns={turns}
                     onPlayAgain={async () => {
                       try {
-                        // Keep the current game mode when restarting
-                        const currentMode = isEndless;
+                        // Always reset to standard mode
+                        setIsEndless(false);
                         setGameOver(false);
                         setGameResult(null);
 
@@ -356,7 +354,7 @@ function App() {
                         setTurns(0);
 
                         // Finally reset all systems sequentially to ensure proper order
-                        await resetGameState(currentMode);
+                        await resetGameState(false);
                         await resetInventory();
                         await resetCardState();
 

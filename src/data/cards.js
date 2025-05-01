@@ -1,3 +1,16 @@
+export const specialItems = [
+  {
+    title: 'Shadow Cloak',
+    description: 'Heal 1 HP and skip your next turn.',
+    use: 'heal_and_skip'
+  },
+  {
+    title: 'Light Shield',
+    description: 'Block the next light trap damage.',
+    use: 'block_damage'
+  }
+];
+
 export const cardData = {
   darkRooms: [
     { type: 'darkRoom', title: 'Quiet Corridor', description: 'A safe passage through the darkness.' },
@@ -14,14 +27,8 @@ export const cardData = {
 
   dangerousTraps: [
     { type: 'lightTrap', title: 'Blinding Flash', description: 'An intense burst of light sears your skin!', damage: 2 },
-    { type: 'trap', title: 'Corrupted Mirror', description: 'Dark energy twists the next cards with malevolent power.', effect: 'corrupt_next_2' },
-    { type: 'trap', title: 'Chain Reaction', description: 'The trap forces you forward into danger!', effect: 'lose_hp_draw_2', damage: 1 },
+    { type: 'lightTrap', title: 'Pain Loop', description: 'You are jolted by a trap and lose 2 HP instantly!', damage: 2 },
     { type: 'lightTrap', title: 'Light Array', description: 'Multiple beams converge on your position!', damage: 2 }
-  ],
-
-  specialCards: [
-    { type: 'special', title: 'Shadow Cloak', description: 'Lets you skip your next turn.', use: 'skip' },
-    { type: 'special', title: 'Crystal Eye', description: 'Reveals the next card in the deck.', use: 'peek' }
   ],
 
   choiceCards: [
@@ -33,7 +40,7 @@ export const cardData = {
       choices: [
         {
           text: 'Touch it',
-          description: '50% chance: gain a special item OR take 1 damage.',
+          description: '50% chance: gain a Shadow Cloak OR take 1 damage.',
           action: 'random_reward_or_damage'
         },
         {
@@ -51,7 +58,7 @@ export const cardData = {
       choices: [
         {
           text: 'Burn 1 HP',
-          description: 'Gain 1 special item.',
+          description: 'Gain a Shadow Cloak.',
           action: 'damage_reward',
           reward: 'item'
         },
@@ -71,11 +78,50 @@ export const cardData = {
         {
           text: 'Trust it',
           description: 'Heal 1 HP, but the next card will be a trap.',
-          action: 'heal_then_corrupt'
+          action: 'heal_then_corrupt',
+          heal: 1
         },
         {
           text: 'Smash it',
           description: 'Avoid the risk.',
+          action: 'nothing'
+        }
+      ]
+    },
+    {
+      type: 'choice',
+      title: 'Fountain of Echoes',
+      description: 'A tranquil pool restores your strength.',
+      hasChoice: true,
+      choices: [
+        {
+          text: 'Drink the water',
+          description: 'Heal 2 HP.',
+          action: 'heal',
+          heal: 2
+        },
+        {
+          text: 'Walk away',
+          description: "You don't trust it.",
+          action: 'nothing'
+        }
+      ]
+    },
+    {
+      type: 'choice',
+      title: 'Sealed Scroll',
+      description: 'A scroll holds forgotten knowledge.',
+      hasChoice: true,
+      choices: [
+        {
+          text: 'Read it aloud',
+          description: 'Gain a Shadow Cloak.',
+          action: 'reward',
+          reward: 'item'
+        },
+        {
+          text: 'Walk away',
+          description: 'Better safe than sorry.',
           action: 'nothing'
         }
       ]

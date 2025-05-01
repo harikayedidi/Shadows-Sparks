@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { cardData } from '../data/cards';
+import { specialItems } from '../data/cards';
 
 export const useCardChoices = (gameState, { inventory }) => {
   const { addMessage, setHealth } = gameState;
@@ -16,11 +16,11 @@ export const useCardChoices = (gameState, { inventory }) => {
     switch (choice.action) {
       case 'random_reward_or_damage':
         if (Math.random() < 0.5) {
-          // Success: Add random special card
-          const specialCards = cardData.specialCards;
-          const randomCard = specialCards[Math.floor(Math.random() * specialCards.length)];
-          addToInventory(randomCard);
-          addMessage('The magic works in your favor! You receive a special item.');
+          // Success: Add random special item (equal chance for each type)
+          const randomIndex = Math.floor(Math.random() * specialItems.length);
+          const item = specialItems[randomIndex];
+          addToInventory(item);
+          addMessage(`The magic works in your favor! You receive a ${item.title}.`);
         } else {
           // Fail: Subtract 1 HP
           setHealth(h => Math.max(0, h - 1));
@@ -29,44 +29,38 @@ export const useCardChoices = (gameState, { inventory }) => {
         break;
 
       case 'damage_reward':
-        // Subtract 1 HP
+        // Subtract 1 HP first
         setHealth(h => Math.max(0, h - 1));
-        // Add random special card
-        const specialCard = cardData.specialCards[Math.floor(Math.random() * cardData.specialCards.length)];
-        addToInventory(specialCard);
-        addMessage('You sacrificed 1 HP and received a powerful item.');
+        // Then add random special item
+        const item = specialItems[Math.floor(Math.random() * specialItems.length)];
+        addToInventory(item);
+        addMessage(`You sacrificed 1 HP and received a ${item.title}.`);
         break;
 
       case 'heal_then_corrupt':
-        // Heal 1 HP
-        setHealth(h => Math.min(5, h + 1));
+        // Heal specified amount
+        if (choice.heal) {
+          setHealth(h => Math.min(5, h + choice.heal));
+          addMessage(`You heal ${choice.heal} HP.`);
+        }
         // Set corrupt for next draw
         setCorruptedDraws(1);
-        addMessage('You feel renewed... but something dark awaits your next draw.');
-        break;
-
-      case 'damage':
-        setHealth(h => Math.max(0, h - 1));
-        addMessage('You take 1 damage from your choice.');
-        if (choice.reward === 'item') {
-          addMessage('But you find something useful!');
-        }
+        addMessage('But dark energy corrupts your next draw...');
         break;
 
       case 'heal':
-        setHealth(h => Math.min(5, h + 1));
-        addMessage('You recover 1 HP.');
+        if (choice.heal) {
+          setHealth(h => Math.min(5, h + choice.heal));
+          addMessage(`You heal ${choice.heal} HP.`);
+        }
         break;
 
-      case 'draw':
-        addMessage('You draw another card.');
-        break;
-
-      case 'discard_item':
-        const discarded = handleItemDiscard();
-        if (!discarded) {
-          setHealth(h => Math.max(0, h - 2));
-          addMessage('With no item to discard, you take 2 damage!');
+      case 'reward':
+        if (choice.reward === 'item') {
+          // Equal chance for any special item
+          const item = specialItems[Math.floor(Math.random() * specialItems.length)];
+          addToInventory(item);
+          addMessage(`You received a ${item.title}!`);
         }
         break;
 
@@ -83,7 +77,7 @@ export const useCardChoices = (gameState, { inventory }) => {
     if (onComplete) {
       setTimeout(onComplete, 500);
     }
-  }, [setHealth, addMessage, handleItemDiscard]);
+  }, [setHealth, addMessage, addToInventory]);
 
   const showChoice = useCallback((description, choices, onComplete) => {
     // Check inventory for choices that require items

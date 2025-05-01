@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { cardData } from '../data/cards';
 import audioManager from '../utils/audio';
 
 const STANDARD_DECK_SIZE = 10;
 
 export const useCardManagement = (gameState, { inventory, takeDamage, cardChoices }) => {
-  const { isEndless, turns, addMessage, setGameOver, setGameResult, incrementTurn } = gameState;
-  const { skipNextTurn, setSkipNextTurn, addToInventory, revealInventory } = inventory;
+  const { isEndless, addMessage, setGameOver, setGameResult, incrementTurn } = gameState;
+  const { skipNextTurn, setSkipNextTurn, blockNextLightTrap, setBlockNextLightTrap } = inventory;
 
   const createDeckWithDifficulty = useCallback((isEndless = false) => {
     const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
@@ -14,26 +14,28 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
     if (isEndless) {
       // In endless mode, generate a smaller dynamic deck that gets replenished
       const generateEndlessDeck = () => {
-        const specialCardChance = 0.2; // 20% chance for special card
         const darkRoomChance = 0.3;   // 30% chance for safe room
         const deckSize = 5;           // Smaller deck that gets replenished
-
         const deck = [];
         
         for (let i = 0; i < deckSize; i++) {
           const roll = Math.random();
           let card;
           
-          if (roll < specialCardChance) {
-            // Add special card
-            card = cardData.specialCards[Math.floor(Math.random() * cardData.specialCards.length)];
-          } else if (roll < specialCardChance + darkRoomChance) {
+          if (roll < darkRoomChance) {
             // Add safe room
             card = cardData.darkRooms[Math.floor(Math.random() * cardData.darkRooms.length)];
           } else {
-            // Add trap
-            const trapPool = [...cardData.lightTraps, ...cardData.dangerousTraps];
-            card = trapPool[Math.floor(Math.random() * trapPool.length)];
+            // Add trap or choice card
+            const poolSize = cardData.lightTraps.length + cardData.dangerousTraps.length + cardData.choiceCards.length;
+            const poolIndex = Math.floor(Math.random() * poolSize);
+            if (poolIndex < cardData.lightTraps.length) {
+              card = cardData.lightTraps[poolIndex];
+            } else if (poolIndex < cardData.lightTraps.length + cardData.dangerousTraps.length) {
+              card = cardData.dangerousTraps[poolIndex - cardData.lightTraps.length];
+            } else {
+              card = cardData.choiceCards[poolIndex - (cardData.lightTraps.length + cardData.dangerousTraps.length)];
+            }
           }
           
           deck.push({
@@ -49,21 +51,15 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
     }
     
     // Standard mode: Random within max limits
-    // Max 3 safe rooms (30%)
-    // Max 4 traps (40%)
-    // Max 3 special/choice (30%)
-    
     const safeRooms = shuffle(cardData.darkRooms).slice(0, Math.floor(Math.random() * 3) + 1);
     const lightTraps = shuffle(cardData.lightTraps).slice(0, Math.floor(Math.random() * 2) + 1);
     const dangerTraps = shuffle(cardData.dangerousTraps).slice(0, Math.floor(Math.random() * 2) + 1);
-    const specialCards = shuffle(cardData.specialCards).slice(0, Math.floor(Math.random() * 2) + 1);
     const choiceCards = [cardData.choiceCards[Math.floor(Math.random() * cardData.choiceCards.length)]];
     
     let deck = [
       ...safeRooms,
       ...lightTraps,
       ...dangerTraps,
-      ...specialCards,
       ...choiceCards
     ];
     
@@ -86,10 +82,18 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
   const [deck, setDeck] = useState(() => createDeckWithDifficulty(isEndless));
   const [currentCard, setCurrentCard] = useState(null);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [remainingDraws, setRemainingDraws] = useState(STANDARD_DECK_SIZE);
+  const [remainingDraws, setRemainingDraws] = useState(isEndless ? Infinity : STANDARD_DECK_SIZE);
 
   const handleDamage = useCallback(async (card) => {
     if (!card) return;
+
+    // Handle light trap damage with shield check
+    if (card.type === 'lightTrap' && blockNextLightTrap) {
+      setBlockNextLightTrap(false);
+      addMessage('Light Shield absorbed the damage! No HP lost.');
+      audioManager.play('itemUse');
+      return;
+    }
 
     // Play damage sound immediately
     audioManager.play('damage');
@@ -98,46 +102,35 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       await takeDamage(card.damage);
       addMessage(`${card.title} deals ${card.damage} damage!`);
     }
-  }, [takeDamage, addMessage]);
+  }, [takeDamage, addMessage, blockNextLightTrap, setBlockNextLightTrap]);
 
   const handleCardEffect = useCallback(async (card) => {
     if (!card) return;
     
     try {
-      // Handle different card types
-    if (card.type === 'special') {
-      // Special cards should not trigger damage effects
-      audioManager.play('itemUse');
-      revealInventory();
-      addToInventory(card);
-      addMessage(`Found a ${card.title}!`);
-      audioManager.play('itemUse');
-    }
-    
-    // Handle damage from light traps
-    if (card.type === 'lightTrap' || card.type === 'trap') {
-      await handleDamage(card);
-    }
-    
-    // Handle other effects after damage
-    if (card?.effect) {
-      switch (card.effect) {
-        case 'corrupt_next_2':
-          cardChoices.current?.setCorruptedDraws(2);
-          addMessage('Corrupted! Your next 2 draws will be dangerous...');
-          // Play corruption sound
-          audioManager.play('damage');
-          // Add corrupted deck visual effect by adding a class to the deck
-          document.querySelector('.game-content').classList.add('corrupted-deck');
-          // Remove the effect after corruption ends
-          setTimeout(() => {
-            document.querySelector('.game-content').classList.remove('corrupted-deck');
-          }, 2000);
-          break;
-          
-        case 'lose_hp_draw_2':
-          if (card.type !== 'special') { // Don't apply damage if it's a special card
-            // Add chain reaction effect once
+      // Handle damage from traps
+      if (card.type === 'lightTrap' || card.type === 'trap') {
+        await handleDamage(card);
+      }
+      
+      // Handle other effects after damage
+      if (card?.effect) {
+        switch (card.effect) {
+          case 'corrupt_next_1':
+            cardChoices.current?.setCorruptedDraws(1);
+            addMessage('Corrupted! Your next draw will be dangerous...');
+            // Play corruption sound
+            audioManager.play('damage');
+            // Add corrupted deck visual effect
+            document.querySelector('.game-content').classList.add('corrupted-deck');
+            // Remove the effect after corruption ends
+            setTimeout(() => {
+              document.querySelector('.game-content').classList.remove('corrupted-deck');
+            }, 2000);
+            break;
+            
+          case 'lose_hp_draw_2':
+            // Add chain reaction effect
             const gameContent = document.querySelector('.game-content');
             gameContent.classList.add('chain-reaction');
             
@@ -149,7 +142,7 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
               gameContent.classList.remove('chain-reaction');
             }, 500);
             
-            // Play chain reaction sound only once
+            // Play chain reaction sound
             audioManager.play('damage');
             
             // Draw two cards with proper async handling
@@ -162,20 +155,19 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
               console.error('Error in chain reaction draw:', error);
               addMessage('Chain reaction was interrupted');
             }
-          }
-          break;
-          
-        default:
-          if (card.type === 'darkRoom') {
-            addMessage('You pass safely through the darkness.');
-          }
+            break;
+            
+          default:
+            if (card.type === 'darkRoom') {
+              addMessage('You pass safely through the darkness.');
+            }
+        }
       }
-    }
     } catch (error) {
       console.error('Error handling card effect:', error);
       addMessage('An error occurred while handling the card effect.');
     }
-  }, [handleDamage, addMessage, revealInventory, addToInventory, setSkipNextTurn]);
+  }, [handleDamage, addMessage]);
 
   const drawCard = useCallback(async () => {
     try {
@@ -187,6 +179,7 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       if (skipNextTurn) {
         setSkipNextTurn(false);
         addMessage('Turn skipped (hiding in shadows).');
+        incrementTurn();
         return;
       }
 
@@ -217,9 +210,7 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       }
 
       // Increment turn counter before any card effects
-      if (!skipNextTurn) {
-        incrementTurn();
-      }
+      incrementTurn();
       
       // Update remaining draws count for standard mode
       if (!isEndless) {
@@ -264,12 +255,6 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       }
 
       // Handle card effects
-      if (drawnCard?.type === 'special' && drawnCard.title.toLowerCase().includes('skip')) {
-        setSkipNextTurn(true);
-        addMessage('You found a Skip card! Next turn will be skipped.');
-        return;
-      }
-
       if (drawnCard?.hasChoice && cardChoices?.current) {
         cardChoices.current.showChoice(
           drawnCard.title,
@@ -307,7 +292,7 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       if (cardChoices.current) {
         cardChoices.current.setCorruptedDraws(0);
       }
-      setRemainingDraws(STANDARD_DECK_SIZE);
+      setRemainingDraws(isEndless ? Infinity : STANDARD_DECK_SIZE);
       addMessage('Deck shuffled and ready.');
       return Promise.resolve();
     } catch (error) {

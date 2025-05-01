@@ -4,12 +4,12 @@ import audioManager from '../utils/audio';
 const MAX_INVENTORY_SLOTS = 2;
 
 export const useInventory = (gameState) => {
-  const { addMessage } = gameState;
+  const { addMessage, setHealth, health } = gameState;
   
   const [inventory, setInventory] = useState(Array(MAX_INVENTORY_SLOTS).fill(null));
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const [skipNextTurn, setSkipNextTurn] = useState(false);
-  const [peeksRemaining, setPeeksRemaining] = useState(2);
+  const [blockNextLightTrap, setBlockNextLightTrap] = useState(false);
 
   const revealInventory = useCallback(() => {
     if (!inventoryVisible) {
@@ -52,22 +52,19 @@ export const useInventory = (gameState) => {
 
     // Handle item effects
     switch (item.use) {
-      case 'peek':
-        setPeeksRemaining(prev => Math.min(prev + 1, 3));
-        addMessage('You gain a peek ability!');
-        break;
-      case 'skip':
+      case 'heal_and_skip':
+        setHealth(prev => Math.min(prev + 1, 5)); // Heal 1 HP, capped at max
         setSkipNextTurn(true);
-        addMessage('You prepare to hide in the shadows...');
+        addMessage('Shadow Cloak used: Healed 1 HP and will skip next turn.');
         break;
-      case 'heal':
-        // Healing is handled by the choice system
-        addMessage(`Used ${item.title}!`);
+      case 'activate_shield':
+        setBlockNextLightTrap(true);
+        addMessage('Light Shield activated! You\'ll block the next light trap.');
         break;
       default:
         addMessage(`Used ${item.title}!`);
     }
-  }, [inventory, addMessage]);
+  }, [inventory, addMessage, setHealth, setSkipNextTurn]);
 
   const handleItemDiscard = useCallback(() => {
     // Find first non-empty slot
@@ -92,7 +89,7 @@ export const useInventory = (gameState) => {
       setInventory(Array(MAX_INVENTORY_SLOTS).fill(null));
       setInventoryVisible(false);
       setSkipNextTurn(false);
-      setPeeksRemaining(2);
+      setBlockNextLightTrap(false);
       return Promise.resolve();
     } catch (error) {
       console.error('Error resetting inventory:', error);
@@ -104,14 +101,14 @@ export const useInventory = (gameState) => {
     inventory,
     showInventory: inventoryVisible,
     skipNextTurn,
-    peeksRemaining,
+    blockNextLightTrap,
     addToInventory,
     useItem,
     handleItemDiscard,
     resetInventory,
     revealInventory,
     setSkipNextTurn,
-    setPeeksRemaining,
+    setBlockNextLightTrap,
     MAX_INVENTORY_SLOTS
   };
 };
