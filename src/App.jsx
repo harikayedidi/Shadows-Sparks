@@ -204,32 +204,32 @@ function App() {
             </div>
 
             {/* Game Board */}
-            <div className="deck-area game-content py-8 relative">
-              {/* Game Content */}
-              <div className="w-full max-w-5xl mx-auto px-4 py-8">
-                <div className="flex flex-col items-center text-center mb-6">
-                  {/* Game Mode Display */}
-                  <div className="text-2xl py-1 shadow inline-flex items-center gap-2">
-                    <span className="text-white">
-                      {isEndless ? ("Endless Mode • " + turns + " turns survived") : ("Standard Mode • " + (10 - turns) + " turns remaining")}
-                    </span>
-                  </div>
-                  {/* Centered Health Bar */}
-                  <div className="my-8">
-                    <HealthBar health={health} maxHealth={5} />
-                  </div>
-                </div>
-
-                {/* Game Area with Deck and Current Card */}
-                <div className="flex flex-col items-center gap-8">
-                  {/* Deck and Current Card Row */}
-                  <div className="flex justify-center items-start gap-12 w-full">
-                    {/* Left Side - Deck */}
-                    <div className="flex flex-col items-center">
-                      <span className="text-lg sm:text-md font-semibold opacity-70 mb-6 text-center">
-                        Draw (Click the Deck)
-                      </span>
-                      <div className="w-48 h-72 sm:w-56 sm:h-80 md:w-64 md:h-96">
+                  <div className="deck-area game-content py-4 sm:py-8 relative">
+                    {/* Game Content */}
+                    <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+                      <div className="flex flex-col items-center text-center mb-4 sm:mb-6">
+                        {/* Game Mode Display */}
+                        <div className="text-xl sm:text-2xl py-1 shadow inline-flex items-center gap-2">
+                          <span className="text-white">
+                            {isEndless ? ("Endless Mode • " + turns + " turns survived") : ("Standard Mode • " + (10 - turns) + " turns remaining")}
+                          </span>
+                        </div>
+                        {/* Centered Health Bar */}
+                        <div className="my-4 sm:my-8">
+                          <HealthBar health={health} maxHealth={5} />
+                        </div>
+                      </div>
+      
+                      {/* Game Area with Deck and Current Card */}
+                      <div className="flex flex-col items-center gap-4 sm:gap-8">
+                        {/* Deck and Current Card Row */}
+                        <div className="flex justify-center items-start gap-4 sm:gap-12 w-full">
+                          {/* Left Side - Deck */}
+                          <div className="flex flex-col items-center">
+                            <span className="text-sm xs:text-lg sm:text-lg font-semibold opacity-70 mb-2 sm:mb-6 text-center">
+                              Draw (Click the Deck)
+                            </span>
+                            <div className="relative">
                         <DeckStack
                           count={deck.length}
                           theme={theme}
@@ -241,7 +241,7 @@ function App() {
                     </div>
 
                     {/* Right Side - Current Card */}
-                    <div className="w-48 h-72 sm:w-56 sm:h-80 md:w-64 md:h-96 mt-10">
+                    <div className="relative mt-6 sm:mt-10 ml-2">
                       <AnimatePresence mode="wait">
                         <Card
                           card={currentCard}

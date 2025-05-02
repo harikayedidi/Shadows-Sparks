@@ -77,21 +77,19 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
       }}
       initial={{
         opacity: 0,
-        scale: 0.5,
-        x: -100,
+        scale: 0.8,
         rotateY: 180
       }}
       animate={{
         opacity: 1,
         scale: 1,
-        x: 0,
         rotateY: isFlipped ? 0 : 180
       }}
       transition={{
         type: "spring",
-        stiffness: 300,
-        damping: 25,
-        mass: 1
+        stiffness: 400,
+        damping: 30,
+        mass: 0.8
       }}
     >
       {/* Card Front */}

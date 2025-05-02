@@ -45,7 +45,7 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
       {/* Interactive top card */}
       <motion.button
         className={`
-          rounded-xl relative z-10
+          rounded-xl sm:rounded-lg  xs:rounded-lg relative z-10
           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           transition-all duration-300 ease-out
           hover:shadow-2xl hover:shadow-blue-500/20
@@ -87,7 +87,7 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
         {/* Card Count Badge */}
         {count > 0 && !isEndless && (
           <div
-            className="absolute -top-3 -right-3 px-2.5 py-1.5 rounded-full text-xl font-medium
+            className="absolute -top-3 -right-3 px-2.5 py-1.5 rounded-full text-xl sm:text-m xs:text-m font-medium
                       backdrop-blur-sm shadow-lg transform transition-all group-hover:scale-110"
             style={{
               background: theme.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',

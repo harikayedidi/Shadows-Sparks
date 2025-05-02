@@ -193,18 +193,25 @@
 
   /* Card Sizes */
   :root {
-    --card-width: 12rem;
-    --card-height: 18rem;
+    --card-width: 10rem;
+    --card-height: 15rem;
   }
 
   @screen sm {
     :root {
-      --card-width: 14rem;
-      --card-height: 20rem;
+      --card-width: 12rem;
+      --card-height: 18rem;
     }
   }
 
   @screen md {
+    :root {
+      --card-width: 14rem;
+      --card-height: 21rem;
+    }
+  }
+
+  @screen lg {
     :root {
       --card-width: 16rem;
       --card-height: 24rem;
