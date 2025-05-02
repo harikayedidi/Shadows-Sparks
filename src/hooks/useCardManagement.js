@@ -187,13 +187,26 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
       if (deck.length === 0) {
         if (isEndless) {
           const newDeck = createDeckWithDifficulty(true);
-          await new Promise(resolve => {
-            setDeck(newDeck);
-            addMessage('The shadows shift... a new set of rooms appears.');
-            resolve();
-          });
-          // Continue with the draw after deck is replenished
-          return drawCard();
+          setDeck(newDeck);
+          addMessage('The shadows shift... a new set of rooms appears.');
+          // Draw from the new deck after a short delay to ensure state update
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const drawnCard = newDeck[newDeck.length - 1];
+          setDeck(newDeck.slice(0, -1));
+          setCurrentCard(drawnCard);
+          setIsFlipped(true);
+          audioManager.play('cardFlip');
+          
+          if (drawnCard?.hasChoice && cardChoices?.current) {
+            cardChoices.current.showChoice(
+              drawnCard.title,
+              drawnCard.choices,
+              () => handleCardEffect(drawnCard)
+            );
+          } else if (drawnCard) {
+            await handleCardEffect(drawnCard);
+          }
+          return;
         } else {
           setGameOver(true);
           setGameResult('victory');

@@ -111,10 +111,30 @@
   }
   
   .inventory-item {
+    position: relative;
+    background: rgba(0, 0, 0, 0.2);
     border: 2px solid transparent;
-    background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff);
-    background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
+    background-clip: padding-box;
+  }
+
+  .inventory-item::before {
+    content: '';
+    position: absolute;
+    top: -2px; right: -2px; bottom: -2px; left: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(
+      45deg,
+      rgba(255, 0, 0, 0.5),
+      rgba(255, 165, 0, 0.5),
+      rgba(255, 255, 0, 0.5),
+      rgba(0, 255, 0, 0.5),
+      rgba(0, 0, 255, 0.5),
+      rgba(238, 130, 238, 0.5)
+    );
+    background-size: 300% 300%;
+    animation: rainbow-border 4s linear infinite;
+    filter: blur(4px);
   }
 
   /* Deck Visualization */
@@ -169,6 +189,26 @@
     @apply grid gap-6;
     @apply sm:grid-cols-[272px_1fr];
     @apply items-start;
+  }
+
+  /* Card Sizes */
+  :root {
+    --card-width: 12rem;
+    --card-height: 18rem;
+  }
+
+  @screen sm {
+    :root {
+      --card-width: 14rem;
+      --card-height: 20rem;
+    }
+  }
+
+  @screen md {
+    :root {
+      --card-width: 16rem;
+      --card-height: 24rem;
+    }
   }
 
   .card-base {
@@ -318,6 +358,12 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-500/80;
+  }
+
+  @keyframes rainbow-border {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   @keyframes gradient {

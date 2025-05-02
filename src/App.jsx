@@ -9,7 +9,6 @@ import InventorySlot from "./components/InventorySlot";
 import GameLog from "./components/GameLog";
 import Instructions from "./components/Instructions";
 import ChoicePopup from "./components/ChoicePopup";
-import WelcomePopup from "./components/WelcomePopup";
 import ThemeSelector from "./components/ThemeSelector";
 import themes from "./data/themes";
 import { useGameState } from "./hooks/useGameState";
@@ -23,8 +22,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 function App() {
   // Initialize theme and UI state
   const {
-    showWelcome,
-    closeWelcome,
     showInventory,
     showInstructions,
     toggleInstructions,
@@ -159,15 +156,15 @@ function App() {
                 >
                   Shadows & Sparks
                 </h1>
-                <p className="text-xl text-gray-300 mb-4">
+                <p className="text-xl text-gray-300 mb-8">
                   A solo survival card game where you draw, decide, and survive
                   10 rounds of risk.
                 </p>
-                {/* Controls */}
-                <div className="flex justify-center items-center gap-4">
+                {/* Controls and Theme */}
+                {/* <div className="flex justify-center items-center gap-4 mb-4 ml-30 sm:ml-4"> */}
                   <motion.button
                     onClick={toggleMute}
-                    className="p-2 rounded-lg bg-gray-500/80 hover:bg-gray-600/80 transition-colors"
+                    className="p-3 rounded-lg bg-gray-700/80 hover:bg-gray-600/80 transition-colors shadow-lg"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     aria-label={
@@ -176,12 +173,18 @@ function App() {
                   >
                     {isMuted ? "🔇" : "🔊"}
                   </motion.button>
-                </div>
+                  <ThemeSelector
+                    currentTheme={theme}
+                    onSelectTheme={handleThemeChange}
+                    isOpen={showThemeSelector}
+                    onToggle={toggleThemeSelector}
+                  />
+                {/* </div> */}
 
-                {/* How to Play Button - Moved to top */}
+                {/* How to Play Button */}
                 <motion.button
                   onClick={toggleInstructions}
-                  className="btn-primary mt-4 mb-8"
+                  className="btn-primary mt-2 mb-8"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   aria-expanded={showInstructions}
@@ -201,10 +204,10 @@ function App() {
             </div>
 
             {/* Game Board */}
-            <div className="deck-area game-content my-12 relative">
+            <div className="deck-area game-content py-8 relative">
               {/* Game Content */}
-              <div className="w-full max-w-4xl mx-auto px-4 py-12">
-                <div className="flex flex-col items-center text-center">
+              <div className="w-full max-w-5xl mx-auto px-4 py-8">
+                <div className="flex flex-col items-center text-center mb-6">
                   {/* Game Mode Display */}
                   <div className="text-2xl py-1 shadow inline-flex items-center gap-2">
                     <span className="text-white">
@@ -217,27 +220,48 @@ function App() {
                   </div>
                 </div>
 
-                {/* Game Area with Deck and Inventory */}
-                <div className="flex flex-row justify-between items-start gap-4 mb-4">
-                  {/* Left Side - Deck */}
-                  <div className="scale-50 origin-top-left sm:scale-75 md:scale-100">
-                    <DeckStack
-                      count={deck.length}
-                      theme={theme}
-                      onDrawCard={drawCard}
-                      isDisabled={gameOver || choicePopup.isOpen}
-                      isEndless={isEndless}
-                    />
+                {/* Game Area with Deck and Current Card */}
+                <div className="flex flex-col items-center gap-8">
+                  {/* Deck and Current Card Row */}
+                  <div className="flex justify-center items-start gap-12 w-full">
+                    {/* Left Side - Deck */}
+                    <div className="flex flex-col items-center">
+                      <span className="text-lg sm:text-md font-semibold opacity-70 mb-6 text-center">
+                        Draw (Click the Deck)
+                      </span>
+                      <div className="w-48 h-72 sm:w-56 sm:h-80 md:w-64 md:h-96">
+                        <DeckStack
+                          count={deck.length}
+                          theme={theme}
+                          onDrawCard={drawCard}
+                          isDisabled={gameOver || choicePopup.isOpen}
+                          isEndless={isEndless}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right Side - Current Card */}
+                    <div className="w-48 h-72 sm:w-56 sm:h-80 md:w-64 md:h-96 mt-10">
+                      <AnimatePresence mode="wait">
+                        <Card
+                          card={currentCard}
+                          isFlipped={isFlipped}
+                          isVictory={gameResult === "victory"}
+                          isDefeat={gameResult === "defeat"}
+                          theme={theme}
+                        />
+                      </AnimatePresence>
+                    </div>
                   </div>
 
-                  {/* Right Side - Inventory */}
+                  {/* Inventory Below */}
                   {(showInventory ||
                     inventory.some((item) => item !== null)) && (
-                    <div className="flex flex-col items-end">
-                      <span className="text-base md:text-lg text-gray-400 mb-2">
-                        Inventory:
+                    <div className="flex flex-col items-center w-full mt-4">
+                      <span className="text-sm font-semibold opacity-70 mb-2">
+                        Inventory
                       </span>
-                      <div className="scale-50 origin-top-right sm:scale-75 md:scale-100 flex gap-2">
+                      <div className="flex justify-center gap-4">
                         {inventory.map((item, index) => (
                           <InventorySlot
                             key={index}
@@ -250,60 +274,11 @@ function App() {
                     </div>
                   )}
                 </div>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentCard?.id || "empty"}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25,
-                    }}
-                    className="w-full flex justify-center"
-                  >
-                    <Card
-                      card={currentCard}
-                      isFlipped={isFlipped}
-                      isVictory={gameResult === "victory"}
-                      isDefeat={gameResult === "defeat"}
-                      theme={theme}
-                    />
-                  </motion.div>
-                </AnimatePresence>
               </div>
-              <motion.button
-                className="btn-utility relative overflow-hidden text-white text-shadow-lg pointer-events-auto"
-                onClick={drawCard}
-                onTouchStart={drawCard}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    drawCard();
-                  }
-                }}
-                disabled={gameOver || choicePopup.isOpen}
-                whileHover={
-                  gameOver || choicePopup.isOpen ? {} : { scale: 1.05 }
-                }
-                whileTap={gameOver || choicePopup.isOpen ? {} : { scale: 0.95 }}
-                tabIndex={gameOver || choicePopup.isOpen ? -1 : 0}
-                aria-disabled={gameOver || choicePopup.isOpen}
-              >
-                <span className="relative z-10">Draw Card</span>
-              </motion.button>
             </div>
           </div>
           {/* Draw Counter */}
-          <div className="w-full max-w-4xl mx-auto px-4 ">
-            <ThemeSelector
-              currentTheme={theme}
-              onSelectTheme={handleThemeChange}
-              isOpen={showThemeSelector}
-              onToggle={toggleThemeSelector}
-            />
-
+          <div className="w-full max-w-4xl mx-auto px-4 mt-4">
             <GameLog messages={messages} />
           </div>
         </motion.div>
@@ -312,15 +287,6 @@ function App() {
         <div className="fixed inset-0 z-50 pointer-events-none">
           {/* Popups Container */}
           <div className="relative z-50 pointer-events-auto">
-            {/* Welcome Popup */}
-            <AnimatePresence>
-              {showWelcome && (
-                <div className="fixed inset-0 flex items-center justify-center">
-                  <WelcomePopup isOpen={true} onClose={closeWelcome} />
-                </div>
-              )}
-            </AnimatePresence>
-
             {/* Choice Popup */}
             <AnimatePresence>
               {choicePopup.isOpen && (

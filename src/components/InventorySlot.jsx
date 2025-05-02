@@ -19,10 +19,11 @@ const InventorySlot = ({ item, onUseItem, slotNumber }) => {
     <motion.div
       className={`
         inventory-slot group relative p-2 sm:p-3 rounded-lg
-        ${item ? 'cursor-pointer hover:ring-2 hover:ring-yellow-400/50 inventory-item' : 'bg-gray-800/60'}
-        focus-within:ring-2 focus-within:ring-blue-400
+        ${item ? 'cursor-pointer inventory-item' : 'bg-gray-800/60'}
+        focus-within:ring-2 focus-within:ring-blue-400/50
         transition-all duration-300 ease-in-out
         w-36 h-48 sm:w-44 sm:h-56 md:w-44 md:h-56
+        backdrop-blur-sm
       `}
       whileHover={item ? { scale: 1.05 } : {}}
       whileTap={item ? { scale: 0.95 } : {}}
@@ -33,19 +34,6 @@ const InventorySlot = ({ item, onUseItem, slotNumber }) => {
       aria-label={item ? `Use ${item.title} from inventory slot ${slotNumber + 1}` : `Empty inventory slot ${slotNumber + 1}`}
     >
       {/* Special glow effect for special items */}
-      {item && (
-        <motion.div
-          className={`absolute inset-0 rounded-lg bg-gradient-to-r from-yellow-400/30 to-amber-500/30'
-          }`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0.2, 0.4, 0.2] }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      )}
 
       {/* Content */}
       {item ? (
@@ -53,7 +41,7 @@ const InventorySlot = ({ item, onUseItem, slotNumber }) => {
           className="relative z-10 transform scale-50 sm:scale-75"
           initial={{ scale: 0.5 }}
           whileHover={{ scale: 0.6 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
           <div className="relative">
             <Card card={item} isFlipped={true} />

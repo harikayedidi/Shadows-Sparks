@@ -16,18 +16,18 @@ export const ThemeSelector = ({ currentTheme, onSelectTheme, isOpen, onToggle })
 
   return (
     <div
-      className="mt-8 px-4"
+      className="flex flex-col my-4 items-center justify-center"
       role="region"
       aria-label="Theme Selection"
     >
       <motion.button
         onClick={onToggle}
-        className="mx-auto mb-4 px-6 py-2 bg-gray-800/80 hover:bg-gray-700/80
-                  backdrop-blur rounded-lg text-gray-300 font-medium
-                  transition-colors focus:outline-none focus:ring-2
-                  focus:ring-white/20 flex items-center gap-2"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        className="btn-custom px-4 py-3
+                   backdrop-blur rounded-lg text-gray-300 font-medium
+                   transition-colors focus:outline-none focus:ring-2
+                   focus:ring-white/20 flex items-center gap-2 shadow-lg"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
         <span>Change Theme</span>
         <motion.span
@@ -47,7 +47,7 @@ export const ThemeSelector = ({ currentTheme, onSelectTheme, isOpen, onToggle })
         transition={{ duration: 0.2 }}
         className="overflow-hidden"
       >
-        <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+        <div className="grid grid-cols-3 gap-4 max-w-md mx-auto px-4 py-3 bg-gray-800/90 rounded-lg backdrop-blur shadow-xl">
         {Object.entries(themes).map(([key, theme]) => (
           <motion.button
             key={key}

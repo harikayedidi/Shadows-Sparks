@@ -2,9 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import themes from '../data/themes';
 
 export const useGameUI = () => {
-  const [showWelcome, setShowWelcome] = useState(() => {
-    return !localStorage.getItem('hasSeenWelcome');
-  });
 
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('selectedTheme');
@@ -26,12 +23,6 @@ export const useGameUI = () => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Handle welcome popup
-  const closeWelcome = useCallback(() => {
-    localStorage.setItem('hasSeenWelcome', 'true');
-    setShowWelcome(false);
   }, []);
 
   // Show inventory when first item is obtained
@@ -56,7 +47,6 @@ export const useGameUI = () => {
 
   return {
     // UI State
-    showWelcome,
     showInventory,
     isMobile,
     showInstructions,
@@ -64,7 +54,6 @@ export const useGameUI = () => {
     theme,
 
     // Actions
-    closeWelcome,
     revealInventory,
     toggleInstructions,
     toggleThemeSelector,

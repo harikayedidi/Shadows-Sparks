@@ -64,24 +64,34 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
   return (
     <motion.div
       className={`
-        relative w-48 h-72 sm:w-56 sm:h-80 md:w-64 md:h-96 rounded-xl shadow-xl card-reveal
+        relative rounded-xl shadow-xl card-reveal
         ${isFlipped ? 'cursor-default' : 'cursor-pointer'}
         ${card.type === 'special' ? 'special-effect' : ''}
         ${card.type === 'lightTrap' ? 'light-trap' : ''}
         ${card.type === 'darkRoom' ? 'dark-room' : ''}
       `}
-      initial={false}
+      style={{
+        width: 'var(--card-width)',
+        height: 'var(--card-height)',
+        transformStyle: 'preserve-3d'
+      }}
+      initial={{
+        opacity: 0,
+        scale: 0.5,
+        x: -100,
+        rotateY: 180
+      }}
       animate={{
-        rotateY: isFlipped ? 0 : 180,
-        scale: isFlipped ? 1 : 0.95
+        opacity: 1,
+        scale: 1,
+        x: 0,
+        rotateY: isFlipped ? 0 : 180
       }}
       transition={{
         type: "spring",
         stiffness: 300,
-        damping: 25
-      }}
-      style={{
-        transformStyle: 'preserve-3d'
+        damping: 25,
+        mass: 1
       }}
     >
       {/* Card Front */}
@@ -90,6 +100,7 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
           absolute inset-0 rounded-xl bg-opacity-90
           transition-all duration-300
           ${cardStyle.className || ''}
+          ${!isFlipped ? 'opacity-0' : 'opacity-100'}
         `}
         style={{
           backfaceVisibility: 'hidden',
@@ -97,7 +108,8 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
           boxShadow: cardStyle.glow,
           border: `2px solid ${cardStyle.border}`,
           background: cardStyle.background,
-          animation: cardStyle.animation
+          animation: cardStyle.animation,
+          transitionDelay: isFlipped ? '150ms' : '0ms'
         }}
       >
         <div className="p-6 flex flex-col h-full">
@@ -166,13 +178,17 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
 
       {/* Card Back */}
       <motion.div
-        className="absolute inset-0 rounded-xl transform hover:scale-105 transition-all duration-300"
+        className={`
+          absolute inset-0 rounded-xl transform transition-all duration-300
+          ${!isFlipped ? 'opacity-100' : 'opacity-0'}
+        `}
         style={{
           backfaceVisibility: 'hidden',
           transform: 'rotateY(180deg)',
           background: theme?.cardBack ? `url(${theme.cardBack}) center/cover` : '#1a1a2e',
           border: `2px solid ${theme?.borderColor || '#ffffff'}80`,
-          boxShadow: `0 0 15px ${theme?.particleColor || '#ffffff'}40`
+          boxShadow: `0 0 15px ${theme?.particleColor || '#ffffff'}40`,
+          transitionDelay: isFlipped ? '0ms' : '150ms'
         }}
       >
         <div className="absolute inset-2 rounded-lg border-2 border-gray-600/30">

@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion';
 
 const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
-  const handleInteraction = (e) => {
-    e.preventDefault();
+  const handleClick = (e) => {
     if (!isDisabled) {
       onDrawCard();
     }
@@ -16,47 +15,69 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
   };
 
   return (
-    <div className="relative deck-scale">
+    <div className="relative w-full h-full group cursor-pointer touch-none">
       {/* Stack visualization - max 4 cards */}
       {[...Array(Math.min(4, count))].map((_, i) => (
-        <div
+        <motion.div
           key={i}
-          className="absolute transition-all duration-300"
+          className="absolute inset-0 transition-all duration-300"
+          initial={false}
           style={{
-            left: `${i * 3}px`,
-            top: `${i * 2}px`,
+            left: `${i * 4}px`,
+            top: `${i * 3}px`,
             transform: `rotate(${i * -2}deg)`,
             zIndex: i
           }}
         >
           <div
-            className="w-36 h-48 rounded-lg transform transition-all duration-300"
+            className="rounded-xl transform transition-all duration-300 group-hover:shadow-xl"
             style={{
+              width: 'var(--card-width)',
+              height: 'var(--card-height)',
               background: `url(${theme.cardBack}) center/cover`,
               border: `2px solid ${theme.borderColor}60`,
               boxShadow: `0 0 10px ${theme.particleColor}40`
             }}
           />
-        </div>
+        </motion.div>
       ))}
 
       {/* Interactive top card */}
       <motion.button
         className={`
-          w-36 h-48 sm:w-36 sm:h-48 rounded-lg relative z-10
-          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}
+          rounded-xl relative z-10
+          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          transition-all duration-300 ease-out
+          hover:shadow-2xl hover:shadow-blue-500/20
+          touch-none
         `}
-        disabled={isDisabled}
-        onClick={handleInteraction}
-        onTouchStart={handleInteraction}
-        onKeyDown={handleKeyDown}
-        whileHover={isDisabled ? {} : { scale: 1.1 }}
-        whileTap={isDisabled ? {} : { scale: 0.98 }}
         style={{
+          width: 'var(--card-width)',
+          height: 'var(--card-height)',
           background: `url(${theme.cardBack}) center/cover`,
           border: `2px solid ${theme.borderColor}60`,
           boxShadow: `0 0 15px ${theme.particleColor}40`,
           WebkitTapHighlightColor: 'transparent'
+        }}
+        disabled={isDisabled}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onTouchStart={(e) => e.stopPropagation()}
+        whileHover={isDisabled ? {} : { scale: 1.05 }}
+        whileTap={isDisabled ? {} : {
+          scale: 0.95,
+          transition: {
+            type: "spring",
+            stiffness: 400,
+            damping: 20
+          }
+        }}
+        initial={false}
+        animate={{ scale: 1 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25
         }}
         role="button"
         tabIndex={isDisabled ? -1 : 0}
@@ -65,9 +86,9 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
       >
         {/* Card Count Badge */}
         {count > 0 && !isEndless && (
-          <div 
-            className="absolute -top-2 -right-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-2xl sm:text-xl font-medium
-                      backdrop-blur-sm shadow-lg"
+          <div
+            className="absolute -top-3 -right-3 px-2.5 py-1.5 rounded-full text-xl font-medium
+                      backdrop-blur-sm shadow-lg transform transition-all group-hover:scale-110"
             style={{
               background: theme.background || 'linear-gradient(to bottom, #1a1a2e, #162447)',
               border: `2px solid ${theme.borderColor}60`,
@@ -80,14 +101,25 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
         )}
         
         {/* Inner glow effect */}
-        <div className="absolute inset-1.5 sm:inset-2 rounded-lg opacity-30">
+        <motion.div
+          className="absolute inset-2 rounded-xl opacity-40"
+          initial={false}
+          animate={{
+            opacity: isDisabled ? 0.1 : [0.2, 0.5, 0.2]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
           <div
-            className="absolute inset-0 rounded-lg"
+            className="absolute inset-0 rounded-xl"
             style={{
               background: `radial-gradient(circle at center, ${theme.particleColor}, transparent)`
             }}
           />
-        </div>
+        </motion.div>
       </motion.button>
     </div>
   );
