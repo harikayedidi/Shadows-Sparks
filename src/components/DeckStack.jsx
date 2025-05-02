@@ -20,12 +20,19 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
       {[...Array(Math.min(4, count))].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute inset-0 transition-all duration-300"
+          className="absolute inset-0"
           initial={false}
+          animate={{
+            opacity: 1,
+            x: i * 4,
+            y: i * 3,
+            rotate: i * -2,
+            transition: {
+              duration: 0.2,
+              ease: "easeOut"
+            }
+          }}
           style={{
-            left: `${i * 4}px`,
-            top: `${i * 3}px`,
-            transform: `rotate(${i * -2}deg)`,
             zIndex: i
           }}
         >
@@ -63,21 +70,24 @@ const DeckStack = ({ count, theme, onDrawCard, isDisabled, isEndless }) => {
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         onTouchStart={(e) => e.stopPropagation()}
-        whileHover={isDisabled ? {} : { scale: 1.05 }}
+        whileHover={isDisabled ? {} : {
+          scale: 1.02,
+          transition: {
+            duration: 0.2
+          }
+        }}
         whileTap={isDisabled ? {} : {
           scale: 0.95,
           transition: {
-            type: "spring",
-            stiffness: 400,
-            damping: 20
+            duration: 0.1
           }
         }}
         initial={false}
-        animate={{ scale: 1 }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 25
+        animate={{
+          scale: 1,
+          transition: {
+            duration: 0.2
+          }
         }}
         role="button"
         tabIndex={isDisabled ? -1 : 0}

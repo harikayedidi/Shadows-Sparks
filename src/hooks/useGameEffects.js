@@ -21,28 +21,33 @@ export const useGameEffects = (gameState) => {
       audioManager.resetPlayCounts();
       audioManager.play('damage');
 
-      setHealth(currentHealth => {
-        const newHealth = Math.max(0, currentHealth - amount);
-        if (newHealth === 0 && !gameOver) {
-          setGameOver(true);
-          setGameResult('defeat');
-          audioManager.resetPlayCounts();
-          audioManager.play('defeat');
-          
-          if (isEndless) {
-            setEndlessStats(prev => ({
-              ...prev,
-              totalTurns: prev.totalTurns + turns,
-              highScore: Math.max(prev.highScore, turns),
-              lastScore: turns
-            }));
-            addMessage(`Game Over! You survived ${turns} turns in endless mode!`);
-          } else {
-            addMessage('Game Over! The darkness claims another victim...');
-          }
+      // Update health first
+      setHealth(currentHealth => Math.max(0, currentHealth - amount));
+
+      // Add delay to wait for card animation
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Then check for defeat condition
+      if (health - amount <= 0 && !gameOver) {
+        audioManager.resetPlayCounts();
+        audioManager.play('defeat');
+        
+        if (isEndless) {
+          setEndlessStats(prev => ({
+            ...prev,
+            totalTurns: prev.totalTurns + turns,
+            highScore: Math.max(prev.highScore, turns),
+            lastScore: turns
+          }));
+          addMessage(`Game Over! You survived ${turns} turns in endless mode!`);
+        } else {
+          addMessage('Game Over! The darkness claims another victim...');
         }
-        return newHealth;
-      });
+        
+        // Set game over state after message
+        setGameOver(true);
+        setGameResult('defeat');
+      }
 
       addMessage(amount === 1 ? 'You take 1 damage!' : `You take ${amount} damage!`);
       return Promise.resolve();
@@ -61,18 +66,23 @@ export const useGameEffects = (gameState) => {
     addMessage
   ]);
 
-  const checkVictory = useCallback(() => {
+  const checkVictory = useCallback(async () => {
     if (!isEndless && turns >= 10 && !gameOver) {
       try {
+        // Wait for any ongoing animations
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         // Reset audio manager play counts before victory
         audioManager.resetPlayCounts();
-        setGameOver(true);
-        setGameResult('victory');
         audioManager.play('victory');
         addMessage('Victory! You mastered the shadows!');
         
         // Store victory state to unlock endless mode
         localStorage.setItem('hasWonStandardMode', 'true');
+        
+        // Set game over state after message
+        setGameOver(true);
+        setGameResult('victory');
         return true;
       } catch (error) {
         console.error('Error checking victory:', error);

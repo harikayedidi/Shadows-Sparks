@@ -99,6 +99,8 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
     audioManager.play('damage');
     
     if (card.damage) {
+      // Delay damage message until animation is complete
+      await new Promise(resolve => setTimeout(resolve, 500));
       await takeDamage(card.damage);
       addMessage(`${card.title} deals ${card.damage} damage!`);
     }
@@ -215,7 +217,33 @@ export const useCardManagement = (gameState, { inventory, takeDamage, cardChoice
         }
       }
 
+      // Allow final card to be drawn before victory
       if (deck.length === 1 && !isEndless) {
+        const finalCard = deck[0];
+        setDeck([]);
+        setCurrentCard(finalCard);
+        setIsFlipped(true);
+        audioManager.play('cardFlip');
+
+        // Wait for card animation to complete
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        if (finalCard?.hasChoice && cardChoices?.current) {
+          await new Promise(resolve => {
+            cardChoices.current.showChoice(
+              finalCard.title,
+              finalCard.choices,
+              async () => {
+                await handleCardEffect(finalCard);
+                resolve();
+              }
+            );
+          });
+        } else if (finalCard) {
+          await handleCardEffect(finalCard);
+        }
+
+        // Show victory after card effect completes
         setGameOver(true);
         setGameResult('victory');
         addMessage('You have survived the shadows!');

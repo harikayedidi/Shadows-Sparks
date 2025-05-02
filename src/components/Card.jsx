@@ -76,38 +76,43 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
         transformStyle: 'preserve-3d'
       }}
       initial={{
-        opacity: 0,
+        opacity: 50,
         scale: 0.8,
-        rotateY: 180
+        x: -220, // Start from deck's horizontal position
+        y: -20  // Start from above the reveal position
       }}
       animate={{
         opacity: 1,
         scale: 1,
-        rotateY: isFlipped ? 0 : 180
+        x: 0,
+        y: 0,
+        transition: {
+          duration: 0.5,
+          ease: [0.4, 0, 0.2, 1] // Custom easing for smoother fall
+        }
       }}
-      transition={{
-        type: "spring",
-        stiffness: 400,
-        damping: 30,
-        mass: 0.8
+      exit={{
+        opacity: 0,
+        scale: 0.8,
+        transition: {
+          duration: 0.2
+        }
       }}
     >
       {/* Card Front */}
       <motion.div
         className={`
           absolute inset-0 rounded-xl bg-opacity-90
-          transition-all duration-300
           ${cardStyle.className || ''}
-          ${!isFlipped ? 'opacity-0' : 'opacity-100'}
         `}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
         style={{
-          backfaceVisibility: 'hidden',
-          transform: 'rotateY(0deg)',
           boxShadow: cardStyle.glow,
           border: `2px solid ${cardStyle.border}`,
           background: cardStyle.background,
-          animation: cardStyle.animation,
-          transitionDelay: isFlipped ? '150ms' : '0ms'
+          animation: cardStyle.animation
         }}
       >
         <div className="p-6 flex flex-col h-full">
@@ -176,17 +181,14 @@ const Card = ({ card, isFlipped, isVictory, isDefeat, theme = {} }) => {  // Add
 
       {/* Card Back */}
       <motion.div
-        className={`
-          absolute inset-0 rounded-xl transform transition-all duration-300
-          ${!isFlipped ? 'opacity-100' : 'opacity-0'}
-        `}
+        className="absolute inset-0 rounded-xl"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
         style={{
-          backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
           background: theme?.cardBack ? `url(${theme.cardBack}) center/cover` : '#1a1a2e',
           border: `2px solid ${theme?.borderColor || '#ffffff'}80`,
-          boxShadow: `0 0 15px ${theme?.particleColor || '#ffffff'}40`,
-          transitionDelay: isFlipped ? '0ms' : '150ms'
+          boxShadow: `0 0 15px ${theme?.particleColor || '#ffffff'}40`
         }}
       >
         <div className="absolute inset-2 rounded-lg border-2 border-gray-600/30">
