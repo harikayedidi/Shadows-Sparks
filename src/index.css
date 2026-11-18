@@ -2,26 +2,371 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-shadow-lg {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+:root {
+  --accent: #5ee7ff;
+  --accent-soft: rgba(94, 231, 255, 0.18);
+  --secondary: #7c8cff;
+  --danger: #ff3c5a;
+  --card-w: clamp(150px, 26vw, 210px);
+  --card-h: calc(var(--card-w) * 1.45);
+  --door-w: clamp(96px, 27vw, 180px);
+  --door-h: calc(var(--door-w) * 1.45);
+  --deck-w: clamp(72px, 14vw, 130px);
+  --deck-h: calc(var(--deck-w) * 1.45);
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #02030a;
+  color: #dbe7ff;
+  font-family: Rajdhani, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Atmosphere ---------- */
+
+.grid-floor {
+  position: fixed;
+  left: -50%;
+  right: -50%;
+  bottom: -10vh;
+  height: 60vh;
+  background-image:
+    linear-gradient(to right, var(--accent-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--accent-soft) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: 50% 0%;
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 85%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 85%);
+  animation: grid-scroll 6s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes grid-scroll {
+  to {
+    background-position: 0 64px;
   }
 }
 
-.game-button {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  mix-blend-mode: overlay;
 }
 
-.game-button:hover {
-  background-color: rgba(0, 0, 0, 0.4);
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 55;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.75) 100%);
 }
 
-.game-button:disabled {
-  opacity: 0.5;
+.cursor-light {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 54;
+  background: radial-gradient(
+    circle 340px at var(--mx, 50%) var(--my, 40%),
+    transparent 0%,
+    rgba(0, 0, 0, 0.18) 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  transition: background 0.05s linear;
+}
+
+/* ---------- Typography ---------- */
+
+.neon-text {
+  color: #fff;
+  text-shadow:
+    0 0 6px var(--accent),
+    0 0 18px var(--accent),
+    0 0 42px var(--accent-soft);
+}
+
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.glitch::before {
+  color: var(--secondary);
+  transform: translate(2px, 0);
+  clip-path: inset(0 0 60% 0);
+  animation: glitch-a 3.2s infinite steps(1);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+}
+
+.glitch::after {
+  color: var(--accent);
+  transform: translate(-2px, 0);
+  clip-path: inset(55% 0 0 0);
+  animation: glitch-b 2.7s infinite steps(1);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+}
+
+@keyframes glitch-a {
+  0%, 92%, 100% { transform: translate(0); clip-path: inset(0 0 100% 0); }
+  93% { transform: translate(4px, -1px); clip-path: inset(10% 0 55% 0); }
+  95% { transform: translate(-3px, 1px); clip-path: inset(40% 0 30% 0); }
+  97% { transform: translate(2px, 0); clip-path: inset(70% 0 5% 0); }
+}
+
+@keyframes glitch-b {
+  0%, 88%, 100% { transform: translate(0); clip-path: inset(100% 0 0 0); }
+  89% { transform: translate(-4px, 1px); clip-path: inset(60% 0 10% 0); }
+  92% { transform: translate(3px, -1px); clip-path: inset(20% 0 60% 0); }
+}
+
+.hud-label {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(219, 231, 255, 0.55);
+}
+
+/* ---------- Panels & buttons ---------- */
+
+.panel {
+  position: relative;
+  background: linear-gradient(180deg, rgba(10, 16, 30, 0.78), rgba(4, 7, 16, 0.86));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 10px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+/* Lets dragged children (gear) escape the clipped corners. */
+.panel-open {
+  clip-path: none;
+  z-index: 20;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14px;
+  width: 64px;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.btn-neon {
+  position: relative;
+  font-family: Orbitron, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #02030a;
+  background: var(--accent);
+  padding: 0.85rem 1.6rem;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  box-shadow: 0 0 24px var(--accent-soft);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn-neon:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.btn-neon:disabled {
+  opacity: 0.35;
   cursor: not-allowed;
+}
+
+.btn-ghost {
+  font-family: Orbitron, system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.75rem 1.4rem;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: #fff;
+}
+
+.btn-ghost:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.4);
+  font-family: 'Share Tech Mono', monospace;
+  transition: background 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--accent-soft);
+}
+
+kbd {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  color: #dbe7ff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- Cards ---------- */
+
+.card-shape {
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.flip-scene {
+  perspective: 1200px;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+.holo-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, 0.28),
+    transparent 45%
+  );
+  mix-blend-mode: overlay;
+}
+
+.card-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.corrupt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 60, 90, 0.18) 0 2px,
+    transparent 2px 6px
+  );
+  animation: corrupt 0.9s steps(4) infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes corrupt {
+  0% { transform: translateX(0); opacity: 0.6; }
+  25% { transform: translateX(-3px); opacity: 1; }
+  50% { transform: translateX(2px); opacity: 0.4; }
+  75% { transform: translateX(-1px); opacity: 0.9; }
+}
+
+.scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, transparent, var(--accent-soft), transparent);
+  animation: scan-beam 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes scan-beam {
+  0% { top: -30%; }
+  100% { top: 100%; }
+}
+
+.caret::after {
+  content: '▌';
+  margin-left: 2px;
+  animation: blink 1s steps(1) infinite;
+  color: var(--accent);
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.log-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-soft) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -31,371 +376,5 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-@layer base {
-  /* Custom Scrollbar Styling */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(100, 100, 100, 0.6);
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(100, 100, 100, 0.8);
-  }
-
-  /* Better touch targets */
-  button, 
-  [role="button"] {
-    @apply min-h-[3rem] min-w-[3rem] select-none;
-    -webkit-tap-highlight-color: transparent;
-  }
-}
-
-@layer components {
-  /* Button System */
-  .btn-primary {
-    @apply bg-gradient-to-br from-emerald-400 to-green-500 text-white
-           hover:from-emerald-500 hover:to-green-600
-           focus:ring-2 focus:ring-green-400 focus:ring-offset-2
-           hover:scale-105 transition-transform duration-300 px-6 py-3 rounded-lg;
-  }
-  
-  .btn-choice {
-    @apply bg-gradient-to-r from-yellow-300 to-yellow-500 text-black
-           hover:from-yellow-400 hover:to-yellow-600
-           hover:scale-105 transition-transform duration-300 px-6 py-3 rounded-lg;
-  }
-  
-  .btn-danger {
-    @apply bg-gradient-to-r from-red-500 to-pink-600 text-white
-           hover:from-red-600 hover:to-pink-700
-           hover:scale-105 transition-transform duration-300 px-6 py-3 rounded-lg;
-  }
-  
-  .btn-utility {
-    @apply bg-gradient-to-r from-cyan-400 to-blue-500 text-white
-           hover:from-cyan-500 hover:to-blue-600
-           hover:scale-105 transition-transform duration-300 px-6 py-3 rounded-lg;
-  }
-  
-  .btn-special {
-    @apply bg-gradient-to-r from-purple-400 via-pink-500 to-orange-400
-           hover:from-purple-500 hover:via-pink-600 hover:to-orange-500
-           hover:scale-105 transition-transform duration-300 px-6 py-3 rounded-lg;
-  }
-
-  /* Card Effects */
-  .light-trap {
-    box-shadow: 0 0 15px #fff;
-    animation: pulse 2s infinite;
-  }
-  
-  .dark-room {
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-  
-  .special-effect {
-    box-shadow: 0 0 25px #ffeb3b;
-  }
-  
-  .inventory-item {
-    position: relative;
-    background: rgba(0, 0, 0, 0.2);
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
-
-  .inventory-item::before {
-    content: '';
-    position: absolute;
-    top: -2px; right: -2px; bottom: -2px; left: -2px;
-    z-index: -1;
-    border-radius: inherit;
-    background: linear-gradient(
-      45deg,
-      rgba(255, 0, 0, 0.5),
-      rgba(255, 165, 0, 0.5),
-      rgba(255, 255, 0, 0.5),
-      rgba(0, 255, 0, 0.5),
-      rgba(0, 0, 255, 0.5),
-      rgba(238, 130, 238, 0.5)
-    );
-    background-size: 300% 300%;
-    animation: rainbow-border 4s linear infinite;
-    filter: blur(4px);
-  }
-
-  /* Deck Visualization */
-  .deck-scale {
-    @apply transform scale-[1.1] transition-all duration-300;
-  }
-  
-  .card-spacing {
-    @apply gap-6;
-  }
-  
-  /* Card Animations */
-  .card-reveal {
-    @apply transition-all duration-300 delay-150;
-  }
-  
-  .fade-in {
-    @apply animate-fade-in duration-500;
-  }
-
-  .game-container {
-    @apply min-h-screen bg-gray-900 text-white;
-    @apply px-4 py-6 sm:p-6 md:p-8;
-  }
-
-  .deck-area {
-    @apply p-6 rounded-xl;
-    @apply border-2 border-gray-700/50;
-    @apply bg-gray-800/40 backdrop-blur-sm;
-    @apply shadow-lg;
-    @apply flex flex-col items-center gap-4;
-    @apply pointer-events-none;
-  }
-
-  .deck-area > * {
-    @apply pointer-events-auto;
-  }
-
-  .error-message {
-    @apply bg-red-900/60 text-red-100;
-    @apply border-l-8 border-red-600;
-    @apply shadow-[0_0_15px_rgba(239,68,68,0.3)];
-    @apply animate-pulse;
-  }
-
-  .game-wrapper {
-    @apply flex flex-col w-full max-w-4xl mx-auto space-y-6;
-  }
-
-  /* Game header layout */
-  .game-header {
-    @apply grid gap-6;
-    @apply sm:grid-cols-[272px_1fr];
-    @apply items-start;
-  }
-
-  /* Card Sizes */
-  :root {
-    --card-width: 10rem;
-    --card-height: 15rem;
-  }
-
-  @screen sm {
-    :root {
-      --card-width: 12rem;
-      --card-height: 18rem;
-    }
-  }
-
-  @screen md {
-    :root {
-      --card-width: 14rem;
-      --card-height: 21rem;
-    }
-  }
-
-  @screen lg {
-    :root {
-      --card-width: 16rem;
-      --card-height: 24rem;
-    }
-  }
-
-  .card-base {
-    @apply w-full max-w-[16rem] h-[24rem] mx-auto;
-    @apply rounded-xl;
-    @apply flex flex-col items-center justify-center p-4;
-    @apply transition-all duration-300;
-    @apply touch-manipulation select-none;
-    @apply sm:max-w-[18rem] sm:h-[27rem];
-    @apply shadow-2xl;
-    @apply backdrop-blur-sm;
-    @apply bg-opacity-90;
-    @apply before:absolute before:inset-0 before:rounded-xl before:z-0;
-  }
-
-  /* Card type-specific styling */
-  .card-dark {
-    @apply bg-gradient-to-br from-green-600 to-green-400;
-    @apply shadow-[0_0_25px_rgba(34,197,94,0.3)];
-  }
-
-  .card-danger {
-    @apply bg-gradient-to-br from-red-600 to-red-400;
-    @apply shadow-[0_0_25px_rgba(239,68,68,0.3)];
-  }
-
-  .card-special {
-    @apply bg-gradient-to-br from-yellow-500 to-yellow-300;
-    @apply shadow-[0_0_25px_rgba(234,179,8,0.3)];
-  }
-
-  .inventory-slot {
-    @apply w-20 h-28 sm:w-24 sm:h-36;
-    @apply border-2 border-dashed border-gray-600/40 rounded-lg;
-    @apply flex items-center justify-center;
-    @apply transition-all duration-200;
-    @apply touch-manipulation select-none;
-    @apply backdrop-blur-sm;
-    @apply shadow-lg hover:shadow-xl;
-    @apply relative overflow-hidden;
-    @apply outline-none;
-    @apply focus:ring-2 focus:ring-blue-400 focus:border-transparent;
-    @apply bg-gray-800/20;
-  }
-
-  .inventory-slot:hover {
-    @apply border-gray-500/60;
-    @apply bg-gray-800/30;
-  }
-
-  .inventory-slot:active {
-    @apply shadow-md;
-    transform: translateY(1px);
-  }
-
-  .health-bar {
-    @apply flex gap-2;
-    @apply text-xl sm:text-2xl;
-    @apply touch-manipulation;
-    @apply p-4 rounded-lg;
-    @apply border-2 border-gray-700/50;
-    @apply bg-gray-800/40 backdrop-blur-sm;
-    @apply shadow-lg;
-  }
-
-  .game-button {
-    @apply w-full sm:w-auto;
-    @apply px-6 py-4 rounded-lg;
-    @apply text-lg font-medium;
-    @apply bg-blue-600 text-white;
-    @apply shadow-lg;
-    @apply transition-all duration-200;
-    @apply touch-manipulation select-none;
-    @apply min-h-[3.5rem];
-    @apply hover:bg-blue-700 active:bg-blue-800;
-    @apply hover:shadow-xl active:shadow-md;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply disabled:hover:bg-blue-600 disabled:active:shadow-lg;
-    @apply border-2 border-blue-500/50;
-  }
-
-  .choice-button {
-    @apply w-full;
-    @apply px-6 py-4 rounded-lg;
-    @apply text-lg font-medium;
-    @apply transition-all duration-200;
-    @apply touch-manipulation select-none;
-    @apply min-h-[3.5rem];
-    @apply hover:shadow-lg active:shadow-md;
-  }
-
-  .choice-button-safe {
-    @apply bg-green-600 text-white;
-    @apply hover:bg-green-700 active:bg-green-800;
-  }
-
-  .choice-button-danger {
-    @apply bg-red-600 text-white;
-    @apply hover:bg-red-700 active:bg-red-800;
-  }
-
-  .game-title {
-    @apply text-2xl sm:text-3xl md:text-4xl;
-    @apply font-bold text-center;
-    @apply mb-2;
-  }
-
-  .game-subtitle {
-    @apply text-base sm:text-lg;
-    @apply text-gray-400 text-center;
-  }
-
-  .game-content {
-    @apply flex flex-col items-center;
-    @apply space-y-6;
-  }
-
-  .game-log {
-    @apply w-full max-w-2xl mx-auto;
-    @apply h-60 overflow-y-auto;
-    @apply rounded-lg bg-gray-800/95;
-    @apply p-4;
-    @apply border border-gray-700;
-    @apply touch-manipulation;
-    @apply backdrop-blur-sm;
-    @apply shadow-xl;
-  }
-
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(100, 100, 100, 0.6) rgba(0, 0, 0, 0.1);
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-gray-900/20;
-    border-radius: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gray-600/60;
-    border-radius: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-500/80;
-  }
-
-  @keyframes rainbow-border {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  .animate-gradient {
-    animation: gradient 3s ease infinite;
-    background-size: 200% 200%;
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 0.6;
-      filter: brightness(1);
-    }
-    50% {
-      opacity: 1;
-      filter: brightness(1.3);
-    }
-  }
-
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
   }
 }

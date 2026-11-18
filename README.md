@@ -23,52 +23,68 @@ The goal was to build a polished game with sound effects, responsive UI, and eng
 
 ## 🎮 Gameplay
 
-- Start with **5 HP**
-- Each turn, **draw a card**:
-  - **Dark Room** (Grey glow): Safe spaces like Quiet Corridors or Dim Chambers
-  - **Light Trap** (White glow): Damage traps
-    - 1 HP: Light Beam, Flickering Lantern
-    - 2 HP: Blinding Flash, Light Array
-  - **Items** (Yellow border): Go into your inventory
-    - Shadow Cloak: Heal 1 HP + skip next turn
-    - Light Shield: Block next light trap
-  - **Choice Cards** (Rainbow glow): Make risky or rewarding decisions
-    - Gamble Rune: 50/50 risk or reward
-    - Wishing Flame: Trade 1 HP for an item
-    - Twisted Mirror: Heal now, trap next
-    - Fountain of Echoes: Heal 2 HP
-    - Sealed Scroll: Gain a Shadow Cloak
+You are **SPARK**, a rogue android escaping the Lumen Spire. **Light burns. Darkness hides.** Climb 10 sublevels to the surface.
 
-- **Win** if you survive 10 turns
-- **Unlock Endless Mode** after your first win
+- You start with **5 core integrity**.
+- **Scan** a sector to reveal 3 doors. Each door gives a sensor reading: **COLD** (safe), **LUMEN** (light trap), **SIGNAL** (a choice) or **CACHE** (gear).
+- Sensors are about 70% accurate, so a reading can lie. An **Oracle Node** can make them perfect for a couple of sectors.
+- **Pick a door** to enter. The card flips to show what's really inside.
+- **Signals** give you a decision with a tradeoff: gamble, trade gear for repairs, accept a Mirror Protocol (heal now, but the next room turns into a trap), and more.
+- **Win** by reaching the surface. Escaping once unlocks **Endless Descent**, where traps get more common and the sensors get worse the deeper you go.
+
+### Gear (3 slots)
+
+| Gear | Effect |
+| --- | --- |
+| Shadow Cloak | Restore 1 integrity and slip through the current sector |
+| Light Shield | Absorb the next light trap |
+| Scanner Pulse | Reveal what's behind every door (use while choosing) |
+| Nano Patch | Restore 1 integrity |
+| Blink Drive | Reroll the doors (use while choosing) |
+
+Click a gear slot to use it, or **drag it onto your core integrity bar**.
+
+### Controls
+
+| Action | Mouse / touch | Keyboard |
+| --- | --- | --- |
+| Scan the next sector | Click or drag the scanner | `Space` / `Enter` |
+| Enter a door | Click it or drag it upward | `1` `2` `3` |
+| Answer a signal | Click an option | `1` `2` |
+| Use gear | Click or drag onto the core | `Q` `W` `E` |
+| Mute / help | Top-right icons | `M` / `H` |
+| Restart after a run | Panel button | `R` |
 
 ---
 
-## 🌈 Themes
+## 🌌 Sectors
 
-Choose your visual environment:
+Pick a sector on the title screen. Each one has its own palette, particles, card back and ambient synth drone:
 
-- **Frozen Crypts** – Cool blues with snowfall  
-- **Ashen Depths** – Dark red, ember-filled  
-- **Void Garden** – Lush green with floating leaves
-
-Each theme comes with:
-- Custom card backs
-- Themed background particles
-- Button glow and draw animations
+- **Cryo Vault**: frozen data halls under permafrost
+- **Reactor Core**: molten conduits, ash in the air
+- **Bio Dome**: overgrown labs, glowing spores
 
 ---
 
 ## ✨ Features
 
-- 🃏 Fast-paced solo card gameplay (2–5 min sessions)  
-- 💥 Card draw animations and responsive glow effects  
-- 🔊 Sound effects for cards, damage, items, and outcomes  
-- 🗃️ Inventory + item usage system  
-- 📜 Auto-scrolling game log with live updates  
-- 🌓 Dynamic theme switching with smooth transitions  
-- 📱 Fully responsive with **touch support** and **mobile optimization**  
-- ♿ Accessibility support (keyboard nav, screen readers, ARIA labels)
+- 🧭 Real choices: three doors per sector with sensor readings that can lie
+- 🃏 Tactile cards: 3D tilt with a holographic sheen, flip reveals, and drag-to-act on the deck, doors and gear
+- 🗺️ A depth map showing your route and how far you are from the surface
+- 🔊 Generative ambient audio that gets tenser as integrity drops, plus a heartbeat when you're critical
+- 💥 Screen shake, damage flashes and haptics on supported phones
+- 📜 A typewriter transmission log that tells the story as you climb
+- ⌨️ Full keyboard play, ARIA labels, and reduced-motion support
+- 💾 Remembers your sector, sound setting, Endless unlock and best depth
+
+### Code layout
+
+- `src/game/engine.js`: pure, seeded game reducer (all rules live here)
+- `src/data/`: room, item, signal content and sector themes
+- `src/hooks/`: React wiring (game loop, sound/visual effects, keyboard, tilt)
+- `src/components/`: UI components
+- `src/utils/audio.js`: Web Audio engine (samples, synth blips, ambient drone)
 
 ---
 
@@ -97,8 +113,8 @@ This project was built entirely using AI tools inside VS Code:
 ## 🛠️ Setup Instructions
 
 ```bash
-git clone https://github.com/your-username/shadows-and-sparks.git
-cd shadows-and-sparks
+git clone https://github.com/harikayedidi/Shadows-Sparks.git
+cd Shadows-Sparks
 npm install
 npm run dev
 ```
@@ -109,7 +125,6 @@ Then open `http://localhost:3000` in your browser.
 
 ## 🧪 What’s Next
 
-- Add full keyboard support and full focus management for accessibility
 - Introduce a scoring system and stat-based leaderboards
 - Expand card types and procedural card generation using AI
 - Add multiple levels of difficulty (e.g. Easy, Normal, Hard) to increase replay value
