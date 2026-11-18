@@ -58,12 +58,61 @@ export const UPGRADE_IDS = Object.keys(UPGRADES);
 export const TWISTS = {
   blackout: { id: 'blackout', title: 'Lights Out', glyph: '●', text: 'No tags on this floor. Dark rooms give a free item.' },
   alarm: { id: 'alarm', title: 'Alarm', glyph: '⚠', text: 'Bright traps hurt 1 more on this floor.' },
-  countdown: { id: 'countdown', title: 'Hurry!', glyph: '⏱', text: 'Pick a door in 8 seconds, or one gets picked for you.', seconds: 8 },
+  countdown: { id: 'countdown', title: 'Hurry!', glyph: '⏱', text: 'Pick a door before the timer runs out, or one gets picked for you.' },
   flipped: { id: 'flipped', title: 'Upside Down', glyph: '⇅', text: 'DARK and BRIGHT tags are swapped on this floor.' },
   jackpot: { id: 'jackpot', title: 'Lucky Floor', glyph: '★', text: 'One door has free loot, and it is marked.' },
 };
 
 export const TWIST_IDS = Object.keys(TWISTS);
+
+// accuracy: how often tags are right. endlessShift moves Endless's sliding accuracy and twist chance.
+// safeBonus / bigTrapMult shift how many safe rooms and 2-damage traps show up.
+export const DIFFICULTIES = {
+  easy: {
+    id: 'easy',
+    title: 'Easy',
+    text: '6 health. Tags are right 8 in 10 times. Fewer big traps.',
+    hp: 6,
+    accuracy: 0.75,
+    accuracyShift: 0.08,
+    safeBonus: 2,
+    bigTrapMult: 0.75,
+    twistChance: 0.25,
+    twistShift: -0.15,
+    timer: 12,
+    bossLocks: -1,
+  },
+  normal: {
+    id: 'normal',
+    title: 'Normal',
+    text: '5 health. Tags are right 7 in 10 times.',
+    hp: 5,
+    accuracy: 0.65,
+    accuracyShift: 0,
+    safeBonus: 0,
+    bigTrapMult: 1,
+    twistChance: 0.4,
+    twistShift: 0,
+    timer: 8,
+    bossLocks: 0,
+  },
+  hard: {
+    id: 'hard',
+    title: 'Hard',
+    text: '4 health. Tags are right 6 in 10 times. More big traps and twists.',
+    hp: 4,
+    accuracy: 0.6,
+    accuracyShift: -0.05,
+    safeBonus: 0,
+    bigTrapMult: 1.25,
+    twistChance: 0.6,
+    twistShift: 0.15,
+    timer: 5,
+    bossLocks: 1,
+  },
+};
+
+export const DIFFICULTY_IDS = Object.keys(DIFFICULTIES);
 
 // Boss floors: find enough dark rooms to sneak past. You stay on the floor until you do.
 export const BOSSES = {

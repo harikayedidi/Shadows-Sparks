@@ -81,6 +81,7 @@ export default function HelpModal({ onClose }) {
           <li><b className="text-white">Upgrades:</b> after some floors, pick 1 of 3 upgrades. They last the whole run.</li>
           <li><b className="text-rose-300">Bosses:</b> floors 5 and 10 have a boss. Find enough dark rooms to get past it.</li>
           <li><b className="text-amber-300">Twists:</b> some floors have a special rule, like a timer or no tags. Check the yellow banner.</li>
+          <li><b className="text-white">Difficulty:</b> pick Easy, Normal or Hard on the title screen. Beat Normal to unlock Hard.</li>
         </ul>
 
         <h3 className="hud-label mt-6 mb-2">Keys</h3>

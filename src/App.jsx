@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import themes from './data/themes';
+import { DIFFICULTIES } from './data/cards';
 import audio from './utils/audio';
 import { useKeyboard } from './hooks/useKeyboard';
 import { SettingsContext } from './hooks/useSettings';
@@ -42,7 +43,14 @@ export default function App() {
   });
   const [muted, setMuted] = useState(() => load('ss.muted', false));
   const [endlessUnlocked, setEndlessUnlocked] = useState(() => load('ss.unlocked', false) || legacyUnlocked());
-  const [best, setBest] = useState(() => load('ss.best', 0) || legacyBest());
+  const [hardUnlocked, setHardUnlocked] = useState(() => load('ss.hard', false));
+  const [difficulty, setDifficulty] = useState(() => {
+    const saved = load('ss.difficulty', 'normal');
+    return DIFFICULTIES[saved] && (saved !== 'hard' || load('ss.hard', false)) ? saved : 'normal';
+  });
+  // Endless best, per difficulty. The old single best counts as Normal.
+  const [bests, setBests] = useState(() => ({ normal: load('ss.best', 0) || legacyBest(), ...load('ss.bests', {}) }));
+  const best = bests[difficulty] ?? 0;
   const [run, setRun] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -65,7 +73,9 @@ export default function App() {
 
   useEffect(() => save('ss.theme', themeId), [themeId]);
   useEffect(() => save('ss.unlocked', endlessUnlocked), [endlessUnlocked]);
-  useEffect(() => save('ss.best', best), [best]);
+  useEffect(() => save('ss.bests', bests), [bests]);
+  useEffect(() => save('ss.hard', hardUnlocked), [hardUnlocked]);
+  useEffect(() => save('ss.difficulty', difficulty), [difficulty]);
   useEffect(() => {
     save('ss.muted', muted);
     audio.setMuted(muted);
@@ -83,9 +93,9 @@ export default function App() {
       audio.unlock();
       audio.startAmbient(theme);
       audio.blip('select');
-      setRun({ mode, id: Date.now() });
+      setRun({ mode, difficulty, id: Date.now() });
     },
-    [endlessUnlocked, theme]
+    [endlessUnlocked, theme, difficulty]
   );
 
   const selectTheme = useCallback(
@@ -97,9 +107,22 @@ export default function App() {
     []
   );
 
-  const finish = useCallback(({ mode, result, depth }) => {
-    if (mode === 'standard' && result === 'victory') setEndlessUnlocked(true);
-    if (mode === 'endless') setBest((b) => Math.max(b, depth));
+  const selectDifficulty = useCallback(
+    (id) => {
+      if (id === 'hard' && !hardUnlocked) return;
+      audio.unlock();
+      audio.blip('select');
+      setDifficulty(id);
+    },
+    [hardUnlocked]
+  );
+
+  const finish = useCallback(({ mode, difficulty: level, result, depth }) => {
+    if (mode === 'standard' && result === 'victory') {
+      setEndlessUnlocked(true);
+      if (level !== 'easy') setHardUnlocked(true);
+    }
+    if (mode === 'endless') setBests((b) => ({ ...b, [level]: Math.max(b[level] ?? 0, depth) }));
   }, []);
 
   const changeSettings = useCallback((patch) => {
@@ -136,9 +159,11 @@ export default function App() {
           <motion.div key={run.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
             <GameScreen
               mode={run.mode}
+              difficulty={run.difficulty}
               theme={theme}
               muted={muted}
               endlessUnlocked={endlessUnlocked}
+              hardUnlocked={hardUnlocked}
               best={best}
               paused={paused}
               onToggleMute={toggleMute}
@@ -157,6 +182,9 @@ export default function App() {
             theme={theme}
             onSelectTheme={selectTheme}
             onStart={start}
+            difficulty={difficulty}
+            onSelectDifficulty={selectDifficulty}
+            hardUnlocked={hardUnlocked}
             endlessUnlocked={endlessUnlocked}
             best={best}
             muted={muted}

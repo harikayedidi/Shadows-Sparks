@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { DIFFICULTIES } from '../data/cards';
 import Typewriter from './Typewriter';
 
 export default function TitleScreen({
@@ -6,6 +7,9 @@ export default function TitleScreen({
   theme,
   onSelectTheme,
   onStart,
+  difficulty,
+  onSelectDifficulty,
+  hardUnlocked,
   endlessUnlocked,
   best,
   muted,
@@ -49,7 +53,7 @@ export default function TitleScreen({
         />
       </p>
 
-      <section className="mt-10 w-full max-w-3xl" aria-label="Pick a look">
+      <section className="mt-8 w-full max-w-3xl" aria-label="Pick a look">
         <p className="hud-label mb-3">Pick a look</p>
         <div className="grid grid-cols-3 gap-3 sm:gap-5">
           {Object.values(themes).map((t) => {
@@ -81,7 +85,39 @@ export default function TitleScreen({
         </div>
       </section>
 
-      <div className="mt-10 flex flex-col sm:flex-row gap-4 items-center">
+      <fieldset className="mt-8 w-full max-w-md">
+        <legend className="hud-label mb-3 mx-auto">Difficulty</legend>
+        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Difficulty">
+          {Object.values(DIFFICULTIES).map((d) => {
+            const active = d.id === difficulty;
+            const locked = d.id === 'hard' && !hardUnlocked;
+            return (
+              <button
+                key={d.id}
+                role="radio"
+                aria-checked={active}
+                disabled={locked}
+                title={locked ? 'Beat Normal to unlock Hard' : d.text}
+                onClick={() => onSelectDifficulty(d.id)}
+                className="px-2 py-2 border font-display text-sm tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  borderColor: active ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                  background: active ? 'var(--accent-soft)' : 'rgba(0,0,0,0.3)',
+                  color: active ? '#fff' : undefined,
+                }}
+              >
+                {locked ? `🔒 ${d.title}` : d.title}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-xs text-slate-400 min-h-[1rem]">
+          {DIFFICULTIES[difficulty].text}
+          {!hardUnlocked && ' Beat Normal to unlock Hard.'}
+        </p>
+      </fieldset>
+
+      <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center">
         <button className="btn-neon text-sm sm:text-base" onClick={() => onStart('standard')}>
           Play <kbd className="ml-2 !text-black !border-black/40 !bg-black/10">Enter</kbd>
         </button>

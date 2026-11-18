@@ -5,9 +5,9 @@
 
 A quick sci-fi card game about a tiny robot escaping a tower full of lights. **Light hurts you. Dark rooms are safe.**
 
-Pick a door, hope the tag isn't lying, and climb 10 floors. Along the way you grab items, pick upgrades that last the whole run, sneak past bosses, and deal with floors that change the rules. No two runs play the same. Inspired by roguelikes like *Slay the Spire* and *Balatro*.
+Pick a door, hope the tag isn't lying, and climb 10 floors. Along the way you grab items, pick upgrades that last the whole run, sneak past bosses, and deal with floors that change the rules. A run takes about 3 to 5 minutes, and no two play the same. Inspired by roguelikes like *Slay the Spire* and *Balatro*.
 
-Works on desktop and phone, with full keyboard play and settings to turn motion and glow down or off.
+Pick **Easy**, **Normal** or **Hard**. Works on desktop and phone, with full keyboard play and settings to turn motion and glow down or off.
 
 ---
 
@@ -16,7 +16,7 @@ Works on desktop and phone, with full keyboard play and settings to turn motion 
 This project explores how far **AI-assisted development** can go when building a complete game end-to-end inside VS Code.
 
 - **Version 1** was the original: a solo card game about light and dark, with animated cards, sound and a mobile-first layout.
-- **Version 2** turns it into a real run-based game: a futuristic look, upgrades, boss floors, floor twists, first-time tips, simple instructions, comfort settings, and hosting on GitHub Pages.
+- **Version 2** turns it into a real run-based game: a futuristic look, upgrades, boss floors, floor twists, first-time tips, simple instructions, difficulty levels, comfort settings, and hosting on GitHub Pages.
 
 Built with **React**, **Tailwind CSS** and **Framer Motion**. Card backs were generated with **ChatGPT 4o image generation**.
 
@@ -53,7 +53,19 @@ Tap an item to use it, or **drag it onto your health**.
 
 - **Upgrades:** after floors 2, 5 and 7 you pick 1 of 3 upgrades that last the whole run (Night Vision, Sunglasses, Lucky Coin, Extra Door, Spare Battery and more). Some combo well together.
 - **Bosses:** floors 5 and 10 have a boss. You stay on the floor until you find enough dark rooms to sneak past.
-- **Twists:** some floors get a special rule, like *Lights Out* (no tags), *Hurry!* (8-second timer), *Upside Down* (DARK and BRIGHT swapped) or *Lucky Floor* (marked free loot).
+- **Twists:** some floors get a special rule, like *Lights Out* (no tags), *Hurry!* (a timer), *Upside Down* (DARK and BRIGHT swapped) or *Lucky Floor* (marked free loot).
+
+### Difficulty
+
+| | Easy | Normal | Hard |
+| --- | --- | --- | --- |
+| Health | 6 | 5 | 4 |
+| Tags are right | 8 in 10 | 7 in 10 | 6 in 10 |
+| Big traps and twists | fewer | some | more |
+| *Hurry!* timer | 12s | 8s | 5s |
+| Boss needs | 1 fewer dark room | as listed | 1 more dark room |
+
+Beat Normal (or Hard) once to unlock Hard. Difficulty applies to Endless too, and your best is saved for each one.
 
 ### Controls
 
@@ -95,15 +107,8 @@ Pick a look on the title screen. Each one has its own colors, particles, card ba
 - 🗺️ A floor map showing your route and the boss floors ahead
 - 🔊 Ambient audio that gets tenser as your health drops, plus haptics on supported phones
 - ♿ Full keyboard play, ARIA labels, and Motion/Glow settings
-- 💾 Remembers your look, settings, Endless unlock and best run
-
-### Code layout
-
-- `src/game/engine.js`: pure, seeded game reducer (all rules live here)
-- `src/data/`: rooms, items, upgrades, twists, bosses and looks
-- `src/hooks/`: React wiring (game loop, effects, settings, tips, keyboard, tilt)
-- `src/components/`: UI components
-- `src/utils/audio.js`: Web Audio engine (samples, synth blips, ambient drone)
+- 🎚️ Easy, Normal and Hard difficulty
+- 💾 Remembers your look, settings, difficulty, unlocks and best runs
 
 ---
 
@@ -114,9 +119,8 @@ Pick a look on the title screen. Each one has its own colors, particles, card ba
 **Version 2** was built with **GitHub Copilot in VS Code**:
 
 - Rewrote the rules as a pure, seeded game engine so they're easy to test and balance
-- Ran lots of simulated games to tune difficulty: following the tags wins about 3 in 4 runs, random clicking about 1 in 4
+- Ran lots of simulated games to tune each difficulty (on Normal, following the tags wins about 7 in 10 runs)
 - Played the game in a real browser on desktop and phone sizes to catch layout and accessibility issues
-- Set up GitHub Pages hosting with a deploy workflow
 
 ---
 
@@ -130,20 +134,22 @@ Pick a look on the title screen. Each one has its own colors, particles, card ba
 
 ---
 
-## 🛠️ Setup Instructions
+## 🤝 Want to help?
 
-```bash
-git clone https://github.com/harikayedidi/Shadows-Sparks.git
-cd Shadows-Sparks
-npm install
-npm run dev
-```
+Ideas, bug reports and code are all welcome!
 
-Then open `http://localhost:3000` in your browser.
+- **Found a bug or have an idea?** [Open an issue](https://github.com/harikayedidi/Shadows-Sparks/issues/new/choose). New cards, upgrades, twists, bosses and looks are great places to start.
+- **Want to build it?** Fork the repo, make your change, and open a pull request. Small PRs are easiest to review.
 
-### Hosting
+To run it locally: `npm install`, then `npm run dev`.
 
-The game is live at **https://harikayedidi.github.io/Shadows-Sparks/**. It redeploys to GitHub Pages on every push to `main` (see `.github/workflows/deploy-pages.yml`).
+**Where things live:**
+
+- `src/game/engine.js`: pure, seeded game reducer (all rules live here)
+- `src/data/`: rooms, items, upgrades, twists, bosses, difficulties and looks
+- `src/hooks/`: React wiring (game loop, effects, settings, tips, keyboard, tilt)
+- `src/components/`: UI components
+- `src/utils/audio.js`: Web Audio engine (samples, synth blips, ambient drone)
 
 ---
 
@@ -151,7 +157,6 @@ The game is live at **https://harikayedidi.github.io/Shadows-Sparks/**. It redep
 
 - A daily run with the same seed for everyone
 - A shop between floors and more upgrades that combo
-- Difficulty levels (Easy, Normal, Hard)
 
 ---
 

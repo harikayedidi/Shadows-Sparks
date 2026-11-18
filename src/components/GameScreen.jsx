@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useAnimationControls } from 'framer-motion';
-import { accuracyText } from '../game/engine';
-import { TWISTS } from '../data/cards';
+import { accuracyText, difficultyOf } from '../game/engine';
 import { useGame } from '../hooks/useGame';
 import { useFx } from '../hooks/useFx';
 import { useKeyboard } from '../hooks/useKeyboard';
@@ -55,8 +54,9 @@ function phasePrompt(state) {
   }
 }
 
-export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, paused, onToggleMute, onHelp, onSettings, onCloseHelp, onRestart, onMenu, onFinish }) {
-  const [state, actions] = useGame(mode);
+export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlocked, hardUnlocked, best, paused, onToggleMute, onHelp, onSettings, onCloseHelp, onRestart, onMenu, onFinish }) {
+  const [state, actions] = useGame(mode, difficulty);
+  const level = difficultyOf(state);
   const pulse = useFx(state.fx);
   const { full, off } = useSettings();
   const [tip, dismissTip] = useTips(state);
@@ -85,10 +85,11 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
     const next = {
       newBest: mode === 'endless' && state.depth > best,
       justUnlocked: mode === 'standard' && state.result === 'victory' && !endlessUnlocked,
+      hardJustUnlocked: mode === 'standard' && state.result === 'victory' && level.id !== 'easy' && !hardUnlocked,
     };
     setSummary(next);
-    onFinish({ mode, result: state.result, depth: state.depth });
-  }, [state.result, state.depth, summary, mode, best, endlessUnlocked, onFinish]);
+    onFinish({ mode, difficulty: level.id, result: state.result, depth: state.depth });
+  }, [state.result, state.depth, summary, mode, level.id, best, endlessUnlocked, hardUnlocked, onFinish]);
 
   const hasItems = state.inventory.some(Boolean);
   const over = state.phase === 'over';
@@ -141,6 +142,7 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
           maxHp={state.maxHp}
           accent={theme.accent}
           mode={state.mode}
+          difficulty={level.title}
           goal={state.goal}
           depth={state.depth}
           history={state.history}
@@ -166,7 +168,7 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
 
           <div className="flex flex-col items-center gap-3 min-h-[calc(var(--card-h)+1rem)] justify-center" style={doorStyle}>
             {countdown && (
-              <Countdown key={state.doors.map((d) => d.id).join()} seconds={TWISTS.countdown.seconds} paused={paused} onDone={actions.timeout} />
+              <Countdown key={state.doors.map((d) => d.id).join()} seconds={level.timer} paused={paused} onDone={actions.timeout} />
             )}
             <LayoutGroup>
               <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-5">
@@ -256,10 +258,12 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
           <GameOverPanel
             result={state.result}
             mode={mode}
+            difficulty={level.title}
             depth={state.depth}
             best={best}
             newBest={summary.newBest}
             justUnlocked={summary.justUnlocked}
+            hardJustUnlocked={summary.hardJustUnlocked}
             history={state.history}
             upgrades={state.upgrades}
             endlessUnlocked={endlessUnlocked || summary.justUnlocked}

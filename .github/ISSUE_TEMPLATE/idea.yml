@@ -1,0 +1,11 @@
+name: 💡 Idea
+description: A new card, upgrade, twist, boss, look or anything else.
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would you add or change, and why would it be fun?
+    validations:
+      required: true

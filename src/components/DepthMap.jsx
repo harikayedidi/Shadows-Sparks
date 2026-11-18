@@ -11,7 +11,7 @@ const nodeColor = (entry) => {
 const isBoss = (d) => (d + 1) % 5 === 0;
 
 // The climb so far: each floor is colored by what you found there. Boss floors are marked.
-export default function DepthMap({ mode, goal, depth, history }) {
+export default function DepthMap({ mode, difficulty, goal, depth, history }) {
   const { full } = useSettings();
   const nodes =
     mode === 'endless'
@@ -37,7 +37,10 @@ export default function DepthMap({ mode, goal, depth, history }) {
 
   return (
     <div className="flex flex-col gap-1 min-w-0" aria-label={goal && depth >= goal ? 'Escaped' : `Floor ${depth + 1}${goal ? ` of ${goal}` : ''}`}>
-      <span className="hud-label">{mode === 'endless' ? `Floor ${depth + 1}` : depth >= goal ? 'Escaped!' : `Floor ${depth + 1} of ${goal}`}</span>
+      <span className="hud-label">
+        {mode === 'endless' ? `Floor ${depth + 1}` : depth >= goal ? 'Escaped!' : `Floor ${depth + 1} of ${goal}`}
+        {difficulty && <span className="text-slate-500"> · {difficulty}</span>}
+      </span>
       <div className="flex items-center">
         {nodes.map((node, i) => {
           const color = nodeColor(node.entry);

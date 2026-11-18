@@ -1,6 +1,5 @@
-import { BOSSES, cardData, HINTS, ITEMS, ITEM_IDS, TWISTS, TWIST_IDS, UPGRADES, UPGRADE_IDS } from '../data/cards';
+import { BOSSES, cardData, DIFFICULTIES, HINTS, ITEMS, ITEM_IDS, TWISTS, TWIST_IDS, UPGRADES, UPGRADE_IDS } from '../data/cards';
 
-export const BASE_HP = 5;
 export const STANDARD_GOAL = 10;
 export const INVENTORY_SLOTS = 3;
 export const DOOR_COUNT = 3;
@@ -25,6 +24,9 @@ export function createRng(seed) {
 export const newSeed = () => Math.floor(Math.random() * 2 ** 32);
 
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+export const difficultyOf = (state) => DIFFICULTIES[state.difficulty] ?? DIFFICULTIES.normal;
 
 function shuffle(rng, arr) {
   const out = [...arr];
@@ -50,10 +52,16 @@ export function bossFor(state, depth = state.depth) {
 
 function bossLocks(state, bossId) {
   const extra = state.mode === 'endless' ? Math.min(2, Math.floor(state.depth / 15)) : 0;
-  return BOSSES[bossId].locks + extra;
+  return Math.max(1, BOSSES[bossId].locks + extra + difficultyOf(state).bossLocks);
 }
 
 function cardWeights(state) {
+  const { safeBonus, bigTrapMult } = difficultyOf(state);
+  const weights = baseCardWeights(state);
+  return { ...weights, safe: Math.max(8, weights.safe + safeBonus), trap2: weights.trap2 * bigTrapMult };
+}
+
+function baseCardWeights(state) {
   if (state.boss) {
     const boss = BOSSES[state.boss.id];
     return { safe: 42, trap1: 30, trap2: boss.trapCap === 1 ? 0 : 18, choice: 0, supply: boss.noLoot ? 0 : 10 };
@@ -94,7 +102,8 @@ export function rollCard(rng, state) {
 
 export function hintAccuracy(state) {
   if (state.oracle > 0) return 1;
-  let accuracy = state.mode === 'endless' ? Math.max(0.45, 0.75 - state.depth * 0.012) : 0.65;
+  const { accuracy: base, accuracyShift } = difficultyOf(state);
+  let accuracy = state.mode === 'endless' ? Math.max(0.45 + accuracyShift, 0.75 + accuracyShift - state.depth * 0.012) : base;
   const bossAccuracy = state.boss && BOSSES[state.boss.id].accuracy;
   if (bossAccuracy) accuracy = Math.min(accuracy, bossAccuracy);
   if (has(state, 'sharp')) accuracy = Math.min(1, accuracy + 0.15);
@@ -204,12 +213,14 @@ function bossProgress(state, rng) {
   return advance(next, { kind: 'boss', title: boss.title }, rng, { bossBeaten: true });
 }
 
-export function createInitialState(mode = 'standard') {
+export function createInitialState(mode = 'standard', difficulty = 'normal') {
+  const level = DIFFICULTIES[difficulty] ? difficulty : 'normal';
   const base = {
     mode,
+    difficulty: level,
     phase: 'ready',
-    hp: BASE_HP,
-    maxHp: BASE_HP,
+    hp: DIFFICULTIES[level].hp,
+    maxHp: DIFFICULTIES[level].hp,
     depth: 0,
     goal: mode === 'standard' ? STANDARD_GOAL : null,
     doors: [],
@@ -338,7 +349,7 @@ export function gameReducer(state, action) {
 
   switch (action.type) {
     case 'START':
-      return createInitialState(action.mode);
+      return createInitialState(action.mode, action.difficulty);
 
     case 'DEAL': {
       if (state.phase !== 'ready') return state;
@@ -349,7 +360,8 @@ export function gameReducer(state, action) {
         next = { ...next, boss: { id: bossId, locks: bossLocks(state, bossId), total: bossLocks(state, bossId) } };
         next = fx(log(next, `Boss! ${boss.intro} ${boss.text}`, 'danger'), 'boss', { boss: bossId });
       } else if (!bossId && !state.twist && state.depth > 0) {
-        const chance = state.mode === 'endless' ? Math.min(0.6, 0.35 + state.depth * 0.01) : 0.4;
+        const { twistChance, twistShift } = difficultyOf(state);
+        const chance = state.mode === 'endless' ? clamp(Math.min(0.6, 0.35 + state.depth * 0.01) + twistShift, 0.1, 0.85) : twistChance;
         if (rng() < chance) {
           const twist = TWISTS[pick(rng, TWIST_IDS)];
           next = fx(log({ ...next, twist: twist.id }, `Floor twist: ${twist.title}! ${twist.text}`, 'warn'), 'twist', { twist: twist.id });

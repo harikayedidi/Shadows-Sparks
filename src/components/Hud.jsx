@@ -14,7 +14,7 @@ const Chip = ({ color, children, title }) => (
 );
 
 const Hud = forwardRef(function Hud(
-  { hp, maxHp, accent, mode, goal, depth, history, shield, oracle, corrupted, upgrades, pulse, dropActive, muted, onToggleMute, onHelp, onSettings, onMenu },
+  { hp, maxHp, accent, mode, difficulty, goal, depth, history, shield, oracle, corrupted, upgrades, pulse, dropActive, muted, onToggleMute, onHelp, onSettings, onMenu },
   integrityRef
 ) {
   return (
@@ -22,7 +22,7 @@ const Hud = forwardRef(function Hud(
       <IntegrityBar ref={integrityRef} hp={hp} max={maxHp} accent={accent} pulse={pulse} dropActive={dropActive} />
 
       <div className="order-3 w-full lg:order-none lg:w-auto flex justify-center">
-        <DepthMap mode={mode} goal={goal} depth={depth} history={history} />
+        <DepthMap mode={mode} difficulty={difficulty} goal={goal} depth={depth} history={history} />
       </div>
 
       <div className="flex items-center gap-2">

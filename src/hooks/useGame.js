@@ -3,8 +3,8 @@ import { createInitialState, gameReducer, newSeed } from '../game/engine';
 
 const REVEAL_MS = 950;
 
-export function useGame(mode) {
-  const [state, dispatch] = useReducer(gameReducer, mode, createInitialState);
+export function useGame(mode, difficulty) {
+  const [state, dispatch] = useReducer(gameReducer, null, () => createInitialState(mode, difficulty));
   const act = useCallback((type, payload = {}) => dispatch({ type, ...payload, seed: newSeed() }), []);
 
   // Let the flip animation land before the room's effect resolves.
