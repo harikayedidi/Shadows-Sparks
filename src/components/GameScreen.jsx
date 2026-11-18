@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useAnimationControls } from 'framer-motion';
-import { MAX_HP } from '../game/engine';
+import { accuracyText } from '../game/engine';
+import { TWISTS } from '../data/cards';
 import { useGame } from '../hooks/useGame';
 import { useFx } from '../hooks/useFx';
 import { useKeyboard } from '../hooks/useKeyboard';
+import { useSettings } from '../hooks/useSettings';
+import { useTips } from '../hooks/useTips';
 import audio from '../utils/audio';
 import Hud from './Hud';
 import DeckScanner from './DeckScanner';
@@ -13,44 +16,63 @@ import ChoicePanel from './ChoicePanel';
 import Inventory from './Inventory';
 import TransmissionLog from './TransmissionLog';
 import GameOverPanel from './GameOverPanel';
+import UpgradePicker from './UpgradePicker';
+import FloorBanner from './FloorBanner';
+import Countdown from './Countdown';
+import TipToast from './TipToast';
 
 const FLASH = {
   damage: 'radial-gradient(circle, rgba(255,40,70,0.15), rgba(255,40,70,0.55))',
   heal: 'radial-gradient(circle, rgba(61,255,180,0.25), transparent 70%)',
   shield: 'radial-gradient(circle, rgba(124,247,255,0.35), transparent 70%)',
   item: 'radial-gradient(circle at 50% 100%, rgba(255,200,87,0.25), transparent 60%)',
+  upgrade: 'radial-gradient(circle, var(--accent-soft), transparent 70%)',
+  bossDown: 'radial-gradient(circle, rgba(61,255,180,0.3), transparent 70%)',
 };
+
+const numberKeys = (n) => Array.from({ length: n }, (_, i) => i + 1).join(' ');
 
 function phasePrompt(state) {
   switch (state.phase) {
     case 'ready':
-      return state.room ? ['Sector cleared. Scan onward', 'Space'] : ['Scan the next sector: click or drag the scanner', 'Space'];
+      if (state.boss) {
+        const { locks } = state.boss;
+        return [`${locks} more dark ${locks === 1 ? 'room' : 'rooms'} to beat the boss. Draw doors`, 'Space'];
+      }
+      return state.room ? ['Nice! Draw the next doors', 'Space'] : ['Draw doors: tap the deck', 'Space'];
     case 'choosing':
-      return ['Choose a door: click, drag it up, or press', '1 2 3'];
+      if (state.twist === 'blackout') return ['Lights out! No tags. Pick a door', numberKeys(state.doors.length)];
+      if (state.oracle > 0) return ['Tags are always right right now. Pick a door', numberKeys(state.doors.length)];
+      return [`Pick a door. Tags are right about ${accuracyText(state)} times`, numberKeys(state.doors.length)];
     case 'revealing':
-      return ['Entering…', null];
+      return ['Opening…', null];
     case 'deciding':
-      return ['Answer the signal', '1 2'];
+      return ['Pick one', '1 2'];
+    case 'upgrading':
+      return ['Pick an upgrade', numberKeys(state.offer.length)];
     default:
       return ['', null];
   }
 }
 
-export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, showHelp, onToggleMute, onHelp, onCloseHelp, onRestart, onMenu, onFinish }) {
+export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, paused, onToggleMute, onHelp, onSettings, onCloseHelp, onRestart, onMenu, onFinish }) {
   const [state, actions] = useGame(mode);
   const pulse = useFx(state.fx);
+  const { full, off } = useSettings();
+  const [tip, dismissTip] = useTips(state);
   const shake = useAnimationControls();
   const integrityRef = useRef(null);
   const [dragState, setDragState] = useState(null);
   const [summary, setSummary] = useState(null);
 
   useEffect(() => {
+    if (!full) return;
     if (pulse?.type === 'damage') {
       shake.start({ x: [0, -12, 10, -7, 5, -2, 0], y: [0, 5, -4, 3, -1, 0], transition: { duration: 0.5 } });
     } else if (pulse?.type === 'deny') {
       shake.start({ x: [0, -4, 4, -2, 0], transition: { duration: 0.25 } });
     }
-  }, [pulse, shake]);
+  }, [pulse, shake, full]);
 
   useEffect(() => {
     audio.setTension(state.hp <= 1 ? 1 : state.hp <= 2 ? 0.7 : state.hp <= 3 ? 0.3 : 0);
@@ -72,31 +94,40 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
   const over = state.phase === 'over';
 
   const pickNumber = (n) => {
-    if (state.phase === 'choosing') actions.enter(n);
-    else if (state.phase === 'deciding') {
+    if (state.phase === 'choosing') {
+      if (n < state.doors.length) actions.enter(n);
+    } else if (state.phase === 'deciding') {
       const option = state.room.card.options[n];
       if (option && !(option.requiresItem && !hasItems)) actions.choose(n);
+    } else if (state.phase === 'upgrading') {
+      if (n < state.offer.length) actions.pickUpgrade(n);
     }
   };
 
+  const unlessPaused = (fn) => () => !paused && fn();
+  const draw = unlessPaused(() => state.phase === 'ready' && actions.deal());
+
   useKeyboard({
-    space: () => !showHelp && state.phase === 'ready' && actions.deal(),
-    enter: () => !showHelp && state.phase === 'ready' && actions.deal(),
-    1: () => !showHelp && pickNumber(0),
-    2: () => !showHelp && pickNumber(1),
-    3: () => !showHelp && pickNumber(2),
-    q: () => !showHelp && actions.useItem(0),
-    w: () => !showHelp && actions.useItem(1),
-    e: () => !showHelp && actions.useItem(2),
-    r: () => over && onRestart(mode),
+    space: draw,
+    enter: draw,
+    1: unlessPaused(() => pickNumber(0)),
+    2: unlessPaused(() => pickNumber(1)),
+    3: unlessPaused(() => pickNumber(2)),
+    4: unlessPaused(() => pickNumber(3)),
+    q: unlessPaused(() => actions.useItem(0)),
+    w: unlessPaused(() => actions.useItem(1)),
+    e: unlessPaused(() => actions.useItem(2)),
+    r: unlessPaused(() => (over ? onRestart(mode) : actions.useItem(3))),
     m: onToggleMute,
-    h: () => (showHelp ? onCloseHelp() : onHelp()),
+    h: () => (paused ? onCloseHelp() : onHelp()),
     '?': onHelp,
     escape: onCloseHelp,
   });
 
   const [promptText, promptKeys] = phasePrompt(state);
-  const showRoom = state.room && state.phase !== 'choosing';
+  const showRoom = state.room && state.phase !== 'choosing' && state.phase !== 'upgrading';
+  const countdown = state.phase === 'choosing' && state.twist === 'countdown';
+  const doorStyle = state.doors.length > 3 ? { '--door-w': 'clamp(78px, 21vw, 160px)' } : undefined;
 
   return (
     <>
@@ -107,7 +138,7 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
         <Hud
           ref={integrityRef}
           hp={state.hp}
-          maxHp={MAX_HP}
+          maxHp={state.maxHp}
           accent={theme.accent}
           mode={state.mode}
           goal={state.goal}
@@ -116,18 +147,27 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
           shield={state.shield}
           oracle={state.oracle}
           corrupted={state.corrupted}
+          upgrades={state.upgrades}
           pulse={pulse}
           dropActive={dragState}
           muted={muted}
           onToggleMute={onToggleMute}
           onHelp={onHelp}
+          onSettings={onSettings}
           onMenu={onMenu}
         />
 
-        <main className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-10 py-2">
-          <DeckScanner cardBack={theme.cardBack} ready={state.phase === 'ready'} onDeal={actions.deal} />
+        {!over && <FloorBanner boss={state.boss} twist={state.twist} />}
 
-          <div className="flex flex-col items-center gap-3 min-h-[calc(var(--card-h)+1rem)] justify-center">
+        <main className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-10 py-2">
+          <div className={state.phase === 'upgrading' ? 'hidden lg:block' : undefined}>
+            <DeckScanner cardBack={theme.cardBack} ready={state.phase === 'ready'} onDeal={actions.deal} />
+          </div>
+
+          <div className="flex flex-col items-center gap-3 min-h-[calc(var(--card-h)+1rem)] justify-center" style={doorStyle}>
+            {countdown && (
+              <Countdown key={state.doors.map((d) => d.id).join()} seconds={TWISTS.countdown.seconds} paused={paused} onDone={actions.timeout} />
+            )}
             <LayoutGroup>
               <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-5">
                 <AnimatePresence mode="popLayout">
@@ -139,6 +179,7 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
                         index={i}
                         cardBack={theme.cardBack}
                         corrupted={state.corrupted}
+                        compact={state.doors.length > 3}
                         onEnter={actions.enter}
                         onHover={() => audio.blip('hover')}
                       />
@@ -163,13 +204,14 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
                     >
                       <div>
                         <div className="text-3xl neon-text">◇</div>
-                        <p className="hud-label mt-3">Awaiting scan</p>
+                        <p className="hud-label mt-3">Draw doors</p>
                       </div>
                     </motion.div>
                   )}
                   {state.phase === 'deciding' && (
                     <ChoicePanel key="choice" card={state.room.card} hasItems={hasItems} onChoose={actions.choose} />
                   )}
+                  {state.phase === 'upgrading' && <UpgradePicker key="upgrade" offer={state.offer} onPick={actions.pickUpgrade} />}
                 </AnimatePresence>
               </div>
             </LayoutGroup>
@@ -187,7 +229,7 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
       </motion.div>
 
       <AnimatePresence>
-        {pulse && FLASH[pulse.type] && (
+        {pulse && !off && FLASH[pulse.type] && (
           <motion.div
             key={pulse.id}
             className="fixed inset-0 pointer-events-none"
@@ -203,8 +245,8 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
         <motion.div
           className="fixed inset-0 pointer-events-none"
           style={{ zIndex: 56, boxShadow: 'inset 0 0 140px rgba(255, 40, 70, 0.5)' }}
-          animate={{ opacity: [0.35, 0.9, 0.35] }}
-          transition={{ repeat: Infinity, duration: state.hp <= 1 ? 0.9 : 1.6 }}
+          animate={{ opacity: full ? [0.35, 0.9, 0.35] : 0.6 }}
+          transition={full ? { repeat: Infinity, duration: state.hp <= 1 ? 0.9 : 1.6 } : {}}
           aria-hidden="true"
         />
       )}
@@ -219,6 +261,7 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
             newBest={summary.newBest}
             justUnlocked={summary.justUnlocked}
             history={state.history}
+            upgrades={state.upgrades}
             endlessUnlocked={endlessUnlocked || summary.justUnlocked}
             onRestart={onRestart}
             onEndless={() => onRestart('endless')}
@@ -226,6 +269,8 @@ export default function GameScreen({ mode, theme, muted, endlessUnlocked, best, 
           />
         )}
       </AnimatePresence>
+
+      <TipToast tip={over || paused ? null : tip} onDismiss={dismissTip} />
     </>
   );
 }

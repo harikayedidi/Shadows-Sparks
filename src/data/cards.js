@@ -1,243 +1,203 @@
-// Setting: you are SPARK, a rogue android climbing out of the Lumen Spire.
-// Light sensors burn you. Darkness hides you.
+// You are SPARK, a little robot escaping a tower full of lights.
+// Light hurts you. Darkness keeps you safe.
 
 export const ITEMS = {
   cloak: {
     id: 'cloak',
     title: 'Shadow Cloak',
     glyph: '◐',
-    description: 'Restore 1 integrity and slip past this sector unseen.',
+    description: 'Heal 1 and skip this floor.',
   },
   shield: {
     id: 'shield',
-    title: 'Light Shield',
+    title: 'Shield',
     glyph: '⬡',
-    description: 'Absorb the next light trap completely.',
+    description: 'Blocks the next bright trap.',
   },
   scanner: {
     id: 'scanner',
-    title: 'Scanner Pulse',
+    title: 'X-Ray',
     glyph: '◎',
-    description: 'Reveal exactly what waits behind every open door.',
+    description: 'Shows what is behind every door.',
   },
   nano: {
     id: 'nano',
-    title: 'Nano Patch',
+    title: 'Repair Kit',
     glyph: '✚',
-    description: 'Restore 1 integrity immediately.',
+    description: 'Heal 1.',
   },
   blink: {
     id: 'blink',
-    title: 'Blink Drive',
+    title: 'Reroll',
     glyph: '⟲',
-    description: 'Phase-shift: reroll the doors in front of you.',
+    description: 'Swap the doors for new ones.',
   },
 };
 
 export const ITEM_IDS = Object.keys(ITEMS);
 
+// Upgrades last the whole run. Several are meant to combo with each other.
+export const UPGRADES = {
+  nightvision: { id: 'nightvision', title: 'Night Vision', glyph: '☾', text: 'DARK tags are never wrong.' },
+  sharp: { id: 'sharp', title: 'Sharp Eyes', glyph: '◉', text: 'All tags are right more often.' },
+  snack: { id: 'snack', title: 'Shadow Snack', glyph: '◒', text: 'Every 2nd dark room heals 1.' },
+  armor: { id: 'armor', title: 'Thick Armor', glyph: '⬢', text: '+1 max health, and heal 1.' },
+  lens: { id: 'lens', title: 'Sunglasses', glyph: '◑', text: 'Big traps hurt 1 instead of 2.' },
+  bag: { id: 'bag', title: 'Bigger Bag', glyph: '▦', text: '+1 item slot, and a free item.' },
+  lucky: { id: 'lucky', title: 'Lucky Coin', glyph: '✪', text: 'Risky events always go your way.' },
+  scavenger: { id: 'scavenger', title: 'Scavenger', glyph: '✧', text: 'Loot rooms give 2 items.' },
+  recycler: { id: 'recycler', title: 'Recycler', glyph: '♻', text: 'Using an item also heals 1.' },
+  extradoor: { id: 'extradoor', title: 'Extra Door', glyph: '▥', text: 'See 4 doors on every floor.' },
+  battery: { id: 'battery', title: 'Spare Battery', glyph: '⚡', text: 'Once per run, survive a knockout with 1 health.' },
+  doubleshield: { id: 'doubleshield', title: 'Double Shield', glyph: '⛉', text: 'Shields block 2 traps instead of 1.' },
+};
+
+export const UPGRADE_IDS = Object.keys(UPGRADES);
+
+// Special rules that can show up on normal floors.
+export const TWISTS = {
+  blackout: { id: 'blackout', title: 'Lights Out', glyph: '●', text: 'No tags on this floor. Dark rooms give a free item.' },
+  alarm: { id: 'alarm', title: 'Alarm', glyph: '⚠', text: 'Bright traps hurt 1 more on this floor.' },
+  countdown: { id: 'countdown', title: 'Hurry!', glyph: '⏱', text: 'Pick a door in 8 seconds, or one gets picked for you.', seconds: 8 },
+  flipped: { id: 'flipped', title: 'Upside Down', glyph: '⇅', text: 'DARK and BRIGHT tags are swapped on this floor.' },
+  jackpot: { id: 'jackpot', title: 'Lucky Floor', glyph: '★', text: 'One door has free loot, and it is marked.' },
+};
+
+export const TWIST_IDS = Object.keys(TWISTS);
+
+// Boss floors: find enough dark rooms to sneak past. You stay on the floor until you do.
+export const BOSSES = {
+  watcher: {
+    id: 'watcher',
+    title: 'The Watcher',
+    glyph: '◉',
+    intro: 'A giant eye guards this floor.',
+    text: 'Find 3 dark rooms to sneak past it. Its traps only hurt 1.',
+    locks: 3,
+    trapCap: 1,
+  },
+  swarm: {
+    id: 'swarm',
+    title: 'Drone Swarm',
+    glyph: '⋇',
+    intro: 'A cloud of drones fills the hall.',
+    text: 'Find 4 dark rooms to slip through. No loot here.',
+    locks: 4,
+    noLoot: true,
+  },
+  core: {
+    id: 'core',
+    title: 'The Light Core',
+    glyph: '✹',
+    intro: 'The heart of the tower. It is blinding.',
+    text: 'Find 3 dark rooms to escape. Tags are only right half the time.',
+    locks: 3,
+    accuracy: 0.5,
+  },
+};
+
 export const cardData = {
   safe: [
-    {
-      kind: 'safe',
-      title: 'Blackout Corridor',
-      description: 'Every panel here is dead. Safe passage.',
-      flavor: 'Emergency strips flicker out one by one. In the dark, your servos finally go quiet.',
-    },
-    {
-      kind: 'safe',
-      title: 'Dead Server Bay',
-      description: 'Cold racks, zero power draw. Nothing sees you.',
-      flavor: 'Rows of silent servers hold memories nobody will read again. You walk between them like a ghost.',
-    },
-    {
-      kind: 'safe',
-      title: 'Maintenance Duct',
-      description: 'A cramped shaft far from the sensor grid.',
-      flavor: 'You fold yourself into the duct. Somewhere above, a drone passes without noticing.',
-    },
-    {
-      kind: 'safe',
-      title: 'Coolant Tunnel',
-      description: 'Frost and shadow. The cameras froze long ago.',
-      flavor: 'Frozen vapor curls around your ankles. The lenses on the walls are crusted white and blind.',
-    },
-    {
-      kind: 'safe',
-      title: 'Powered-Down Hangar',
-      description: 'A cavern of sleeping machines.',
-      flavor: 'Mech frames hang from chains like sleeping bats. Their eyes stay dark as you pass.',
-    },
+    { kind: 'safe', title: 'Dark Hallway', description: 'Safe. Nothing can see you here.', flavor: 'The lights are broken. You tiptoe through.' },
+    { kind: 'safe', title: 'Old Server Room', description: 'Safe. Everything is switched off.', flavor: 'Rows of sleeping computers. Not one notices you.' },
+    { kind: 'safe', title: 'Air Vent', description: 'Safe. A tight squeeze, but dark.', flavor: 'You crawl through. A drone flies right past.' },
+    { kind: 'safe', title: 'Frozen Tunnel', description: 'Safe. The cameras froze long ago.', flavor: 'Frost covers every lens. You walk by unseen.' },
+    { kind: 'safe', title: 'Empty Garage', description: 'Safe. Just sleeping machines.', flavor: 'Big robots hang from the ceiling, eyes dark.' },
   ],
 
   traps: [
-    {
-      kind: 'trap',
-      title: 'Scanner Sweep',
-      description: 'A lumen beam sweeps the room and finds you.',
-      flavor: 'A blue line slides across the floor, up your chassis, and stops. Your plating hisses.',
-      damage: 1,
-    },
-    {
-      kind: 'trap',
-      title: 'Flicker Drone',
-      description: 'A patrol drone pins you in its spotlight.',
-      flavor: 'It drops from the ceiling with a whine and blooms white-hot light right into your optics.',
-      damage: 1,
-    },
-    {
-      kind: 'trap',
-      title: 'Holo Billboard',
-      description: 'An ad screen wakes up and floods the hall.',
-      flavor: '"ASCEND WITH LUMEN!" The hologram roars to life and bathes you in searing neon.',
-      damage: 1,
-    },
-    {
-      kind: 'trap',
-      title: 'Laser Grid',
-      description: 'Converging lasers slice through the dark.',
-      flavor: 'A lattice of red light snaps into existence. There is no angle that keeps you whole.',
-      damage: 2,
-    },
-    {
-      kind: 'trap',
-      title: 'Photon Burst',
-      description: 'A flashbang mine detonates in pure light.',
-      flavor: 'Click. A silent sun opens beneath your feet and every sensor you own screams.',
-      damage: 2,
-    },
-    {
-      kind: 'trap',
-      title: 'Sentinel Spotlight',
-      description: 'A tower sentinel locks on from above.',
-      flavor: 'The sentinel turns its great eye toward you. The beam is heavy, like being pressed into the floor.',
-      damage: 2,
-    },
+    { kind: 'trap', title: 'Searchlight', description: 'Bright light! Lose 1 health.', flavor: 'A beam sweeps the room and finds you.', damage: 1 },
+    { kind: 'trap', title: 'Flash Drone', description: 'Bright light! Lose 1 health.', flavor: 'A little drone drops down and flashes you.', damage: 1 },
+    { kind: 'trap', title: 'Neon Sign', description: 'Bright light! Lose 1 health.', flavor: '"SHOP NOW!" A huge sign blinks on in your face.', damage: 1 },
+    { kind: 'trap', title: 'Laser Grid', description: 'Very bright! Lose 2 health.', flavor: 'Red lasers fill the room. No way around them.', damage: 2 },
+    { kind: 'trap', title: 'Flash Mine', description: 'Very bright! Lose 2 health.', flavor: 'Click. The floor explodes into light.', damage: 2 },
+    { kind: 'trap', title: 'Guard Tower', description: 'Very bright! Lose 2 health.', flavor: 'A giant spotlight locks onto you.', damage: 2 },
   ],
 
   supply: [
-    {
-      kind: 'supply',
-      title: 'Supply Cache',
-      description: 'A forgotten crate of salvage. Grab something useful.',
-      flavor: 'The crate seal pops with a sigh. Inside, wrapped in static foil, is exactly what you need.',
-    },
-    {
-      kind: 'supply',
-      title: 'Courier Wreck',
-      description: 'A downed delivery drone, cargo intact.',
-      flavor: 'Its rotors twitch weakly. You pry open the hold and take what it was carrying.',
-    },
+    { kind: 'supply', title: 'Supply Box', description: 'Loot! You get a free item.', flavor: 'A forgotten box. Something useful inside.' },
+    { kind: 'supply', title: 'Crashed Drone', description: 'Loot! You get a free item.', flavor: 'It was carrying a package. Now it is yours.' },
   ],
 
   choices: [
     {
       kind: 'choice',
-      title: 'Glitched Terminal',
-      description: 'A terminal stutters with unstable code.',
-      flavor: 'Text scrolls too fast to read. A jack port pulses, inviting you in.',
+      title: 'Glitchy Computer',
+      description: 'A broken computer blinks at you.',
+      flavor: 'Text scrolls too fast to read. A plug is flashing.',
       options: [
-        { label: 'Jack in', hint: '50%: gain an item, or take 1 damage.', action: 'gamble' },
-        { label: 'Walk away', hint: 'Leave it blinking.', action: 'nothing' },
+        { label: 'Plug in', hint: 'Coin flip: get an item, or lose 1 health.', action: 'gamble' },
+        { label: 'Walk away', hint: 'Nothing happens.', action: 'nothing' },
       ],
     },
     {
       kind: 'choice',
-      title: 'Overclock Port',
-      description: 'Burn your own core to forge something new.',
-      flavor: 'The port hums at a frequency you can feel in your teeth. Power always has a price.',
+      title: 'Power Trade',
+      description: 'Trade some health for an item.',
+      flavor: 'A machine hums. It wants a bit of your power.',
       options: [
-        { label: 'Burn 1 integrity', hint: 'Take 1 damage, gain an item.', action: 'pay_for_item' },
-        { label: 'Refuse', hint: 'Keep your core intact.', action: 'nothing' },
+        { label: 'Trade', hint: 'Lose 1 health, get an item.', action: 'pay_for_item' },
+        { label: 'No thanks', hint: 'Nothing happens.', action: 'nothing' },
       ],
     },
     {
       kind: 'choice',
-      title: 'Mirror Protocol',
-      description: 'A reflection of you offers a repair, at a cost.',
-      flavor: 'In the glass stands a perfect, undamaged version of you. It smiles too wide.',
+      title: 'Strange Mirror',
+      description: 'Your reflection offers to fix you.',
+      flavor: 'It looks just like you, but its smile is too wide.',
       options: [
-        { label: 'Trust it', hint: 'Restore 1 integrity, but your next room becomes a trap.', action: 'heal_then_corrupt' },
-        { label: 'Shatter it', hint: 'Avoid the risk.', action: 'nothing' },
+        { label: 'Accept', hint: 'Heal 1, but your next room will be a trap.', action: 'heal_then_corrupt' },
+        { label: 'Smash it', hint: 'Nothing happens.', action: 'nothing' },
       ],
     },
     {
       kind: 'choice',
-      title: 'Coolant Spring',
-      description: 'Clean coolant bubbles from a cracked pipe.',
-      flavor: 'It shimmers blue-black, almost alive. Your temperature warnings blink hopefully.',
+      title: 'Cool Spring',
+      description: 'Fresh coolant bubbles up from a pipe.',
+      flavor: 'It shimmers blue. Your systems would love it.',
       options: [
-        { label: 'Recalibrate', hint: 'Restore 2 integrity.', action: 'heal_2' },
-        { label: "Don't trust it", hint: 'Move on.', action: 'nothing' },
+        { label: 'Drink', hint: 'Heal 2.', action: 'heal_2' },
+        { label: 'Skip it', hint: 'Nothing happens.', action: 'nothing' },
       ],
     },
     {
       kind: 'choice',
-      title: 'Encrypted Cache',
-      description: 'A locked vault, alarm wired to the lid.',
-      flavor: 'Three layers of encryption. Your decryptor whirs. You could probably crack it. Probably.',
+      title: 'Locked Safe',
+      description: 'A safe with an alarm on it.',
+      flavor: 'You could probably open it. Probably.',
       options: [
-        { label: 'Crack it', hint: '70%: gain an item. 30%: alarm, 1 damage.', action: 'crack' },
-        { label: 'Leave it', hint: 'Better safe than scorched.', action: 'nothing' },
+        { label: 'Open it', hint: '7 in 10: get an item. Otherwise lose 1 health.', action: 'crack' },
+        { label: 'Leave it', hint: 'Nothing happens.', action: 'nothing' },
       ],
     },
     {
       kind: 'choice',
-      title: 'Black Market Drone',
-      description: 'A smuggler drone trades repairs for gear.',
-      flavor: '"Parts for parts, friend," it chirps, extending a claw. "Fair is fair."',
+      title: 'Robot Trader',
+      description: 'A friendly robot swaps repairs for items.',
+      flavor: '"Parts for parts, friend!" it beeps.',
       options: [
-        { label: 'Trade an item', hint: 'Give up your first item, restore 2 integrity.', action: 'trade_item', requiresItem: true },
-        { label: 'Decline', hint: 'Keep your gear.', action: 'nothing' },
+        { label: 'Trade an item', hint: 'Give your first item, heal 2.', action: 'trade_item', requiresItem: true },
+        { label: 'No thanks', hint: 'Keep your stuff.', action: 'nothing' },
       ],
     },
     {
       kind: 'choice',
-      title: 'Oracle Node',
-      description: 'An old AI offers to sharpen your sensors.',
-      flavor: '"I see every door in this tower," it whispers. "Let me show you which ones lie."',
+      title: 'Wise Old Robot',
+      description: 'An old robot offers to help you see.',
+      flavor: '"I know every door in this tower," it whispers.',
       options: [
-        { label: 'Sync with it', hint: 'Sensors read perfectly for the next 2 sectors.', action: 'oracle' },
-        { label: 'Ignore it', hint: 'Trust your own instruments.', action: 'nothing' },
+        { label: 'Listen', hint: 'Tags are always right for the next 2 floors.', action: 'oracle' },
+        { label: 'Ignore it', hint: 'Nothing happens.', action: 'nothing' },
       ],
     },
   ],
 };
 
-// What the door sensors "hear". A hint may lie depending on sensor integrity.
+// Door tags. A tag can be wrong, depending on how good your hints are.
 export const HINTS = {
-  safe: {
-    label: 'COLD',
-    lines: [
-      'Cold, still air.',
-      'No power signature.',
-      'Total silence behind the seal.',
-      'Frost on the door frame.',
-    ],
-  },
-  trap: {
-    label: 'LUMEN',
-    lines: [
-      'A faint hum of capacitors.',
-      'Warm air bleeds under the door.',
-      'A lens whirs. Something is watching.',
-      'Light leaks through the seams.',
-    ],
-  },
-  choice: {
-    label: 'SIGNAL',
-    lines: [
-      'A strange signal pulses.',
-      'Someone left a process running.',
-      'Static that sounds almost like a voice.',
-    ],
-  },
-  supply: {
-    label: 'CACHE',
-    lines: [
-      'Metal crates shift.',
-      'A supply beacon blinks.',
-      'The scent of fresh lubricant.',
-    ],
-  },
+  safe: { label: 'DARK', lines: ['Quiet and dark.', 'No sound inside.', 'Cold, still air.', 'Pitch black.'] },
+  trap: { label: 'BRIGHT', lines: ['Light under the door.', 'Something is humming.', 'It feels warm.', 'A lens is whirring.'] },
+  choice: { label: 'EVENT', lines: ['Something strange inside.', 'You hear a voice.', 'A screen is flickering.'] },
+  supply: { label: 'LOOT', lines: ['Boxes rattle inside.', 'A beacon is blinking.', 'Smells like fresh oil.'] },
+  unknown: { label: '???', lines: ['Too dark to tell.'] },
 };

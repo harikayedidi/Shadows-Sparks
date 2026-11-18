@@ -11,6 +11,7 @@ export default function TitleScreen({
   muted,
   onToggleMute,
   onHelp,
+  onSettings,
 }) {
   return (
     <motion.main
@@ -21,15 +22,18 @@ export default function TitleScreen({
       transition={{ duration: 0.5 }}
     >
       <div className="absolute top-4 right-4 flex gap-2">
-        <button className="icon-btn" onClick={onToggleMute} aria-label={muted ? 'Unmute' : 'Mute'} title="Sound (M)">
+        <button className="icon-btn" onClick={onToggleMute} aria-label={muted ? 'Turn sound on' : 'Turn sound off'} title="Sound (M)">
           {muted ? '🔇' : '🔊'}
+        </button>
+        <button className="icon-btn" onClick={onSettings} aria-label="Settings" title="Settings">
+          ⚙
         </button>
         <button className="icon-btn" onClick={onHelp} aria-label="How to play" title="How to play (H)">
           ?
         </button>
       </div>
 
-      <p className="hud-label mb-4">Lumen Spire // Containment breach detected</p>
+      <p className="hud-label mb-4">A tiny robot · A tower full of lights</p>
 
       <h1
         className="glitch neon-text font-display font-black tracking-wider text-5xl sm:text-7xl md:text-8xl leading-none"
@@ -40,13 +44,13 @@ export default function TitleScreen({
 
       <p className="mt-6 max-w-xl text-lg sm:text-xl text-slate-300 min-h-[3.5rem]">
         <Typewriter
-          text="You are SPARK, a rogue android. Light sensors burn you. Darkness hides you. Climb ten sublevels to the surface."
+          text="You are SPARK, a little robot. Light hurts you. Dark rooms are safe. Climb 10 floors to escape!"
           speed={18}
         />
       </p>
 
-      <section className="mt-10 w-full max-w-3xl" aria-label="Choose sector">
-        <p className="hud-label mb-3">Select sector</p>
+      <section className="mt-10 w-full max-w-3xl" aria-label="Pick a look">
+        <p className="hud-label mb-3">Pick a look</p>
         <div className="grid grid-cols-3 gap-3 sm:gap-5">
           {Object.values(themes).map((t) => {
             const active = t.id === theme.id;
@@ -79,22 +83,22 @@ export default function TitleScreen({
 
       <div className="mt-10 flex flex-col sm:flex-row gap-4 items-center">
         <button className="btn-neon text-sm sm:text-base" onClick={() => onStart('standard')}>
-          Begin infiltration <kbd className="ml-2 !text-black !border-black/40 !bg-black/10">Enter</kbd>
+          Play <kbd className="ml-2 !text-black !border-black/40 !bg-black/10">Enter</kbd>
         </button>
         <button
           className="btn-ghost text-sm"
           onClick={() => onStart('endless')}
           disabled={!endlessUnlocked}
-          title={endlessUnlocked ? 'Endless descent' : 'Escape the Spire once to unlock'}
+          title={endlessUnlocked ? 'Endless mode' : 'Win once to unlock Endless'}
         >
-          {endlessUnlocked ? `Endless descent${best ? ` · best ${best}` : ''}` : '🔒 Endless descent'}
+          {endlessUnlocked ? `Endless${best ? ` · best ${best} floors` : ''}` : '🔒 Endless'}
         </button>
       </div>
-      {!endlessUnlocked && <p className="mt-3 text-xs text-slate-500">Escape the Spire once to unlock Endless.</p>}
+      {!endlessUnlocked && <p className="mt-3 text-xs text-slate-500">Win once to unlock Endless.</p>}
 
       <p className="mt-12 hud-label flex flex-wrap justify-center gap-x-4 gap-y-2">
-        <span><kbd>Space</kbd> scan</span>
-        <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> choose</span>
+        <span><kbd>Space</kbd> draw doors</span>
+        <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> pick</span>
         <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> items</span>
         <span><kbd>M</kbd> sound</span>
       </p>

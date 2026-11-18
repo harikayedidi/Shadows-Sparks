@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { KIND_STYLE } from '../data/themes';
 import { useTilt } from '../hooks/useTilt';
+import { useSettings } from '../hooks/useSettings';
 import Typewriter from './Typewriter';
 
 const KIND_BG = {
@@ -14,7 +15,8 @@ const KIND_BG = {
 // The room you entered. Flips from the door art to its contents, then types out the flavor text.
 const RoomCard = forwardRef(function RoomCard({ card, cardBack, corrupted, dim = false }, ref) {
   const tilt = useTilt(6);
-  const [landed, setLanded] = useState(false);
+  const { full } = useSettings();
+  const [landed, setLanded] = useState(!full);
   const style = KIND_STYLE[card.kind];
 
   return (
@@ -38,7 +40,7 @@ const RoomCard = forwardRef(function RoomCard({ card, cardBack, corrupted, dim =
       >
         <article
           className="flip-face card-shape overflow-hidden flex flex-col"
-          style={{ background: KIND_BG[card.kind], boxShadow: `inset 0 0 0 1px ${style.color}99` }}
+          style={{ background: KIND_BG[card.kind], border: `1px solid ${style.color}99` }}
           aria-live="polite"
         >
           <div className="absolute inset-0 card-grid" />
@@ -46,8 +48,8 @@ const RoomCard = forwardRef(function RoomCard({ card, cardBack, corrupted, dim =
             <motion.div
               className="absolute inset-0"
               style={{ background: 'conic-gradient(from 180deg at 50% -10%, transparent 0deg, rgba(255,250,220,0.25) 20deg, transparent 40deg, rgba(255,250,220,0.18) 60deg, transparent 80deg)' }}
-              animate={{ opacity: [0.4, 1, 0.6, 1] }}
-              transition={{ repeat: Infinity, duration: 0.8 }}
+              animate={{ opacity: full ? [0.4, 1, 0.6, 1] : 0.7 }}
+              transition={full ? { repeat: Infinity, duration: 0.8 } : {}}
             />
           )}
 
@@ -81,7 +83,7 @@ const RoomCard = forwardRef(function RoomCard({ card, cardBack, corrupted, dim =
           {corrupted && (
             <>
               <div className="corrupt-overlay" />
-              <span className="absolute top-1/2 left-0 right-0 text-center font-display text-xs tracking-[0.4em] text-[#ff3c5a]">CORRUPTED</span>
+              <span className="absolute top-1/2 left-0 right-0 text-center font-display text-xs tracking-[0.4em] text-[#ff3c5a]">CURSED</span>
             </>
           )}
         </article>

@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import themes from './data/themes';
 import audio from './utils/audio';
 import { useKeyboard } from './hooks/useKeyboard';
+import { SettingsContext } from './hooks/useSettings';
 import Atmosphere from './components/Atmosphere';
 import TitleScreen from './components/TitleScreen';
 import GameScreen from './components/GameScreen';
 import HelpModal from './components/HelpModal';
+import SettingsModal from './components/SettingsModal';
 
 const load = (key, fallback) => {
   try {
@@ -29,6 +31,10 @@ const save = (key, value) => {
 const legacyUnlocked = () => load('hasWonStandardMode', false) === true;
 const legacyBest = () => load('endlessStats', {})?.highScore ?? 0;
 
+const MOTION_LEVELS = ['full', 'reduced', 'off'];
+const defaultMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full';
+
 export default function App() {
   const [themeId, setThemeId] = useState(() => {
     const saved = load('ss.theme', 'frozen');
@@ -39,7 +45,23 @@ export default function App() {
   const [best, setBest] = useState(() => load('ss.best', 0) || legacyBest());
   const [run, setRun] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [motionLevel, setMotionLevel] = useState(() => {
+    const saved = load('ss.motion', null);
+    return MOTION_LEVELS.includes(saved) ? saved : defaultMotion();
+  });
+  const [glow, setGlow] = useState(() => load('ss.glow', true) !== false);
+  const settings = useMemo(() => ({ motion: motionLevel, glow }), [motionLevel, glow]);
   const theme = themes[themeId];
+
+  useEffect(() => {
+    save('ss.motion', motionLevel);
+    document.documentElement.dataset.motion = motionLevel;
+  }, [motionLevel]);
+  useEffect(() => {
+    save('ss.glow', glow);
+    document.documentElement.dataset.glow = glow ? 'on' : 'off';
+  }, [glow]);
 
   useEffect(() => save('ss.theme', themeId), [themeId]);
   useEffect(() => save('ss.unlocked', endlessUnlocked), [endlessUnlocked]);
@@ -80,23 +102,34 @@ export default function App() {
     if (mode === 'endless') setBest((b) => Math.max(b, depth));
   }, []);
 
+  const changeSettings = useCallback((patch) => {
+    if (patch.motion) setMotionLevel(patch.motion);
+    if (patch.glow !== undefined) setGlow(patch.glow);
+  }, []);
+
   const openHelp = useCallback(() => setShowHelp(true), []);
-  const closeHelp = useCallback(() => setShowHelp(false), []);
+  const openSettings = useCallback(() => setShowSettings(true), []);
+  const closeModals = useCallback(() => {
+    setShowHelp(false);
+    setShowSettings(false);
+  }, []);
+  const paused = showHelp || showSettings;
   const toMenu = useCallback(() => setRun(null), []);
 
   useKeyboard(
     {
-      enter: () => !showHelp && start('standard'),
+      enter: () => !paused && start('standard'),
       m: toggleMute,
       h: () => setShowHelp((s) => !s),
       '?': openHelp,
-      escape: closeHelp,
+      escape: closeModals,
     },
     !run
   );
 
   return (
-    <>
+    <SettingsContext.Provider value={settings}>
+      <MotionConfig reducedMotion={motionLevel === 'full' ? 'never' : 'always'}>
       <Atmosphere theme={theme} />
       <AnimatePresence mode="wait">
         {run ? (
@@ -107,10 +140,11 @@ export default function App() {
               muted={muted}
               endlessUnlocked={endlessUnlocked}
               best={best}
-              showHelp={showHelp}
+              paused={paused}
               onToggleMute={toggleMute}
               onHelp={openHelp}
-              onCloseHelp={closeHelp}
+              onSettings={openSettings}
+              onCloseHelp={closeModals}
               onRestart={start}
               onMenu={toMenu}
               onFinish={finish}
@@ -128,10 +162,17 @@ export default function App() {
             muted={muted}
             onToggleMute={toggleMute}
             onHelp={openHelp}
+            onSettings={openSettings}
           />
         )}
       </AnimatePresence>
-      <AnimatePresence>{showHelp && <HelpModal onClose={closeHelp} />}</AnimatePresence>
-    </>
+      <AnimatePresence>{showHelp && <HelpModal onClose={closeModals} />}</AnimatePresence>
+      <AnimatePresence>
+        {showSettings && (
+          <SettingsModal settings={settings} muted={muted} onChange={changeSettings} onToggleMute={toggleMute} onClose={closeModals} />
+        )}
+      </AnimatePresence>
+      </MotionConfig>
+    </SettingsContext.Provider>
   );
 }

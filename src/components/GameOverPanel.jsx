@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
 import { KIND_STYLE } from '../data/themes';
 
-export default function GameOverPanel({ result, mode, depth, best, newBest, justUnlocked, history, endlessUnlocked, onRestart, onEndless, onMenu }) {
+export default function GameOverPanel({ result, mode, depth, best, newBest, justUnlocked, history, upgrades, endlessUnlocked, onRestart, onEndless, onMenu }) {
   const won = result === 'victory';
   const damageTaken = history.reduce((sum, h) => sum + (h.damage || 0), 0);
-  const signals = history.filter((h) => h.kind === 'choice').length;
-  const title = won ? 'ESCAPED' : 'SIGNAL LOST';
+  const title = won ? 'YOU ESCAPED!' : 'CAUGHT!';
   const color = won ? 'var(--accent)' : '#ff3c5a';
 
   return (
@@ -23,7 +22,7 @@ export default function GameOverPanel({ result, mode, depth, best, newBest, just
         initial={{ scale: 0.9, y: 30 }}
         animate={{ scale: 1, y: 0, transition: { delay: 0.7, type: 'spring', stiffness: 200, damping: 18 } }}
       >
-        <p className="hud-label">{won ? 'Surface hatch open' : 'Core integrity 0%'}</p>
+        <p className="hud-label">{won ? 'You made it to the roof' : 'Out of health'}</p>
         <h2
           className="glitch font-display font-black text-4xl sm:text-5xl mt-2"
           data-text={title}
@@ -33,17 +32,17 @@ export default function GameOverPanel({ result, mode, depth, best, newBest, just
         </h2>
         <p className="mt-3 text-slate-300">
           {won
-            ? 'Cool night air hits your sensors. Above you, real stars. Darkness never felt so safe.'
+            ? 'Cool night air. Real stars. SPARK is free!'
             : mode === 'endless'
-              ? `The Spire swallows you at depth ${depth}.`
-              : 'The light finds you. Your last transmission flickers out.'}
+              ? `The light caught you on floor ${depth + 1}.`
+              : `The light caught you on floor ${depth + 1}. Try again: every run is different!`}
         </p>
 
         <div className="mt-6 grid grid-cols-3 gap-2">
           {[
-            [mode === 'endless' ? 'Depth' : 'Sectors', depth],
-            ['Damage', damageTaken],
-            ['Signals', signals],
+            ['Floors cleared', depth],
+            ['Damage taken', damageTaken],
+            ['Upgrades', upgrades.length],
           ].map(([label, value]) => (
             <div key={label} className="bg-white/5 py-3">
               <div className="font-display text-2xl text-white">{value}</div>
@@ -63,18 +62,18 @@ export default function GameOverPanel({ result, mode, depth, best, newBest, just
           ))}
         </div>
 
-        {newBest && <p className="mt-4 font-display text-sm tracking-widest" style={{ color: 'var(--accent)' }}>NEW RECORD · DEPTH {depth}</p>}
-        {mode === 'endless' && !newBest && best > 0 && <p className="mt-4 hud-label">Best depth {best}</p>}
-        {justUnlocked && <p className="mt-4 font-display text-sm tracking-widest" style={{ color: 'var(--accent)' }}>ENDLESS DESCENT UNLOCKED</p>}
+        {newBest && <p className="mt-4 font-display text-sm tracking-widest" style={{ color: 'var(--accent)' }}>NEW BEST · {depth} FLOORS</p>}
+        {mode === 'endless' && !newBest && best > 0 && <p className="mt-4 hud-label">Best: {best} floors</p>}
+        {justUnlocked && <p className="mt-4 font-display text-sm tracking-widest" style={{ color: 'var(--accent)' }}>ENDLESS MODE UNLOCKED</p>}
 
         <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-center">
           <button className="btn-neon text-xs whitespace-nowrap" onClick={() => onRestart(mode)} autoFocus>
-            {won ? 'Run again' : 'Reboot'} <kbd className="ml-1 !text-black !border-black/40 !bg-black/10">R</kbd>
+            {won ? 'Play again' : 'Try again'} <kbd className="ml-1 !text-black !border-black/40 !bg-black/10">R</kbd>
           </button>
           {endlessUnlocked && mode !== 'endless' && (
-            <button className="btn-ghost text-xs whitespace-nowrap" onClick={onEndless}>Go endless</button>
+            <button className="btn-ghost text-xs whitespace-nowrap" onClick={onEndless}>Try Endless</button>
           )}
-          <button className="btn-ghost text-xs whitespace-nowrap" onClick={onMenu}>Title</button>
+          <button className="btn-ghost text-xs whitespace-nowrap" onClick={onMenu}>Menu</button>
         </div>
       </motion.div>
     </motion.div>

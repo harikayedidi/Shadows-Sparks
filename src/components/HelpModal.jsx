@@ -2,11 +2,17 @@ import { motion } from 'framer-motion';
 import { ITEMS } from '../data/cards';
 import { KIND_STYLE } from '../data/themes';
 
-const HINT_ROWS = [
-  ['safe', 'COLD', 'Usually a dark, safe room.'],
-  ['trap', 'LUMEN', 'Usually a light trap: 1–2 damage.'],
-  ['choice', 'SIGNAL', 'Usually a choice: risk vs reward.'],
-  ['supply', 'CACHE', 'Usually salvage: a free item.'],
+const TAGS = [
+  ['safe', 'DARK', 'Safe. Nothing hurts you.'],
+  ['trap', 'BRIGHT', 'A light trap. You lose 1 or 2 health.'],
+  ['choice', 'EVENT', 'Something happens. You get to pick.'],
+  ['supply', 'LOOT', 'A free item!'],
+];
+
+const STEPS = [
+  ['Draw doors', <>Tap the deck or press <kbd>Space</kbd>. You get 3 doors.</>],
+  ['Pick one', <>Each door has a tag that hints what's inside. Tags are <b>usually</b> right, but not always!</>],
+  ['Climb', <>Get through 10 floors without running out of health. That's it!</>],
 ];
 
 export default function HelpModal({ onClose }) {
@@ -29,24 +35,26 @@ export default function HelpModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="hud-label">Field manual</p>
-            <h2 className="font-display text-2xl neon-text mt-1">How to survive</h2>
-          </div>
+          <h2 className="font-display text-2xl neon-text">How to play</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
         </div>
+        <p className="mt-2 text-slate-300">You are SPARK, a little robot. Light hurts you. Dark rooms are safe.</p>
 
-        <ol className="mt-5 space-y-2 text-slate-300 text-base list-decimal list-inside">
-          <li><b>Scan</b> the next sector (click or drag the deck, or press <kbd>Space</kbd>).</li>
-          <li>Three sealed <b>doors</b> appear. Each sensor reading hints at what's inside, but sensors only read true about <b>70%</b> of the time.</li>
-          <li><b>Enter</b> a door (click it, drag it up, or press <kbd>1</kbd>–<kbd>3</kbd>). Survive 10 sectors with your core intact to escape.</li>
+        <ol className="mt-5 grid sm:grid-cols-3 gap-3">
+          {STEPS.map(([title, text], i) => (
+            <li key={title} className="bg-white/5 p-3">
+              <span className="font-display text-2xl" style={{ color: 'var(--accent)' }}>{i + 1}</span>
+              <b className="block text-white mt-1">{title}</b>
+              <span className="block text-sm text-slate-300 mt-1">{text}</span>
+            </li>
+          ))}
         </ol>
 
-        <h3 className="hud-label mt-6 mb-2">Sensor readings</h3>
+        <h3 className="hud-label mt-6 mb-2">Door tags</h3>
         <div className="grid sm:grid-cols-2 gap-2">
-          {HINT_ROWS.map(([kind, label, text]) => (
+          {TAGS.map(([kind, label, text]) => (
             <div key={kind} className="flex items-center gap-3 bg-white/5 px-3 py-2">
-              <span className="font-mono text-xs px-2 py-0.5" style={{ color: KIND_STYLE[kind].color, border: `1px solid ${KIND_STYLE[kind].color}66` }}>
+              <span className="font-mono text-xs px-2 py-0.5 w-16 text-center" style={{ color: KIND_STYLE[kind].color, border: `1px solid ${KIND_STYLE[kind].color}66` }}>
                 {label}
               </span>
               <span className="text-sm text-slate-300">{text}</span>
@@ -54,7 +62,7 @@ export default function HelpModal({ onClose }) {
           ))}
         </div>
 
-        <h3 className="hud-label mt-6 mb-2">Gear (3 slots)</h3>
+        <h3 className="hud-label mt-6 mb-2">Items</h3>
         <div className="grid sm:grid-cols-2 gap-2">
           {Object.values(ITEMS).map((item) => (
             <div key={item.id} className="flex items-start gap-3 bg-white/5 px-3 py-2">
@@ -66,19 +74,25 @@ export default function HelpModal({ onClose }) {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-sm text-slate-400">
-          Use gear by clicking it, pressing <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd>, or <b>dragging it onto your core</b>.
-        </p>
+        <p className="mt-2 text-sm text-slate-400">Tap an item to use it, or drag it onto your health.</p>
 
-        <h3 className="hud-label mt-6 mb-2">Controls</h3>
+        <h3 className="hud-label mt-6 mb-2">Along the way</h3>
+        <ul className="space-y-2 text-sm text-slate-300">
+          <li><b className="text-white">Upgrades:</b> after some floors, pick 1 of 3 upgrades. They last the whole run.</li>
+          <li><b className="text-rose-300">Bosses:</b> floors 5 and 10 have a boss. Find enough dark rooms to get past it.</li>
+          <li><b className="text-amber-300">Twists:</b> some floors have a special rule, like a timer or no tags. Check the yellow banner.</li>
+        </ul>
+
+        <h3 className="hud-label mt-6 mb-2">Keys</h3>
         <p className="text-sm text-slate-300 flex flex-wrap gap-x-5 gap-y-2">
-          <span><kbd>Space</kbd> scan</span>
-          <span><kbd>1</kbd>–<kbd>3</kbd> enter door / choose</span>
-          <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> use gear</span>
+          <span><kbd>Space</kbd> draw doors</span>
+          <span><kbd>1</kbd>–<kbd>4</kbd> pick</span>
+          <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd> items</span>
           <span><kbd>M</kbd> sound</span>
-          <span><kbd>H</kbd> this manual</span>
+          <span><kbd>H</kbd> help</span>
           <span><kbd>Esc</kbd> close</span>
         </p>
+        <p className="mt-4 text-xs text-slate-500">Too much flashing? Open ⚙ Settings to turn down motion and glow.</p>
       </motion.div>
     </motion.div>
   );

@@ -369,12 +369,44 @@ kbd {
   scrollbar-color: var(--accent-soft) transparent;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+/* ---------- Comfort settings (set on <html> by App) ---------- */
+
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after,
+[data-motion='off'] *,
+[data-motion='off'] *::before,
+[data-motion='off'] *::after {
+  animation: none !important;
+}
+
+[data-motion='reduced'] .glitch::before,
+[data-motion='reduced'] .glitch::after,
+[data-motion='off'] .glitch::before,
+[data-motion='off'] .glitch::after,
+[data-motion='reduced'] .scan-beam,
+[data-motion='off'] .scan-beam {
+  display: none;
+}
+
+[data-motion='off'] *,
+[data-motion='off'] *::before,
+[data-motion='off'] *::after {
+  transition-duration: 0s !important;
+}
+
+[data-glow='off'] *,
+[data-glow='off'] *::before,
+[data-glow='off'] *::after {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+[data-glow='off'] .holo-sheen,
+[data-glow='off'] .scanlines {
+  display: none;
+}
+
+[data-glow='off'] .neon-text {
+  color: var(--accent);
 }

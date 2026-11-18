@@ -1,13 +1,15 @@
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useSettings } from '../hooks/useSettings';
 
-// The facility scanner: click it, drag the top card off, or press Space to reveal the next doors.
+// The door deck: click it, drag the top card off, or press Space to draw the next doors.
 export default function DeckScanner({ cardBack, onDeal, ready }) {
   const dragged = useRef(false);
+  const { full } = useSettings();
 
   return (
     <div className="flex flex-col items-center gap-2 select-none">
-      <span className="hud-label">{ready ? 'Scan sector' : 'Scanner'}</span>
+      <span className="hud-label">{ready ? 'Draw doors' : 'Doors'}</span>
       <div className="relative" style={{ width: 'var(--deck-w)', height: 'var(--deck-h)' }}>
         {[3, 2, 1].map((i) => (
           <div
@@ -42,7 +44,7 @@ export default function DeckScanner({ cardBack, onDeal, ready }) {
             if (!dragged.current && ready) onDeal();
           }}
           animate={{ filter: ready ? 'brightness(1)' : 'brightness(0.45) grayscale(0.6)' }}
-          aria-label="Scan the next sector"
+          aria-label="Draw the next doors"
           aria-disabled={!ready}
         >
           {ready && <div className="scan-beam" />}
@@ -50,8 +52,8 @@ export default function DeckScanner({ cardBack, onDeal, ready }) {
             <motion.div
               className="absolute inset-0"
               style={{ boxShadow: 'inset 0 0 0 2px var(--accent), inset 0 0 30px var(--accent-soft)' }}
-              animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ repeat: Infinity, duration: 1.6 }}
+              animate={{ opacity: full ? [0.4, 1, 0.4] : 1 }}
+              transition={full ? { repeat: Infinity, duration: 1.6 } : {}}
             />
           )}
         </motion.button>

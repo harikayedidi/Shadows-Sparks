@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ITEMS } from '../data/cards';
 
-const KEYS = ['Q', 'W', 'E'];
+const KEYS = ['Q', 'W', 'E', 'R'];
 
 const isOver = (targetRef, point) => {
   const rect = targetRef.current?.getBoundingClientRect();
@@ -76,8 +76,8 @@ function ItemSlot({ itemId, slot, dropTargetRef, onUse, onDragState }) {
 
 export default function Inventory({ items, dropTargetRef, onUse, onDragState }) {
   return (
-    <section className="panel panel-open px-3 py-2 sm:px-4 sm:py-3" aria-label="Gear">
-      <p className="hud-label mb-2">Gear · drag onto core</p>
+    <section className="panel panel-open px-3 py-2 sm:px-4 sm:py-3" aria-label="Items">
+      <p className="hud-label mb-2">Items · tap or drag onto health</p>
       <div className="flex gap-2 sm:gap-3">
         {items.map((itemId, slot) => (
           <ItemSlot key={slot} itemId={itemId} slot={slot} dropTargetRef={dropTargetRef} onUse={onUse} onDragState={onDragState} />

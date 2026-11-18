@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-
-const prefersReduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+import { useSettings } from '../hooks/useSettings';
 
 export default function Typewriter({ text, speed = 22, start = true, className = '', caret = true }) {
+  const { full } = useSettings();
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -10,7 +10,7 @@ export default function Typewriter({ text, speed = 22, start = true, className =
       setCount(0);
       return undefined;
     }
-    if (prefersReduced()) {
+    if (!full) {
       setCount(text.length);
       return undefined;
     }
@@ -25,7 +25,7 @@ export default function Typewriter({ text, speed = 22, start = true, className =
       });
     }, speed);
     return () => clearInterval(timer);
-  }, [text, speed, start]);
+  }, [text, speed, start, full]);
 
   const done = count >= text.length;
   return (

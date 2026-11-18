@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Typewriter from './Typewriter';
+import { useSettings } from '../hooks/useSettings';
 
 const TONE = {
   info: 'text-slate-400',
@@ -12,22 +13,23 @@ const TONE = {
 
 export default function TransmissionLog({ entries }) {
   const listRef = useRef(null);
+  const { full } = useSettings();
 
   useEffect(() => {
     const el = listRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-  }, [entries.length]);
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: full ? 'smooth' : 'auto' });
+  }, [entries.length, full]);
 
   return (
-    <section className="panel px-3 py-2 sm:px-4 sm:py-3 min-w-0 flex flex-col" aria-label="Transmission log">
+    <section className="panel px-3 py-2 sm:px-4 sm:py-3 min-w-0 flex flex-col" aria-label="What happened">
       <p className="hud-label mb-2 flex items-center gap-2">
         <motion.span
           className="inline-block w-1.5 h-1.5 rounded-full"
           style={{ background: 'var(--accent)' }}
-          animate={{ opacity: [1, 0.2, 1] }}
-          transition={{ repeat: Infinity, duration: 1.2 }}
+          animate={{ opacity: full ? [1, 0.2, 1] : 1 }}
+          transition={full ? { repeat: Infinity, duration: 1.2 } : {}}
         />
-        Transmission log
+        What happened
       </p>
       <ul ref={listRef} className="log-scroll overflow-y-auto max-h-28 sm:max-h-32 space-y-1 pr-1" aria-live="polite">
         {entries.map((entry, i) => {

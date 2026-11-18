@@ -1,11 +1,14 @@
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
+import { useSettings } from '../hooks/useSettings';
 
 const HEX = 'polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%)';
 
-// Core integrity readout. Doubles as the drop target for dragged gear.
+// Health readout. Also the drop target for dragged items.
 const IntegrityBar = forwardRef(function IntegrityBar({ hp, max, pulse, dropActive, accent }, ref) {
+  const { full } = useSettings();
   const critical = hp <= 2;
+  const blink = critical && full;
   const color = critical ? '#ff3c5a' : 'var(--accent)';
 
   return (
@@ -17,13 +20,13 @@ const IntegrityBar = forwardRef(function IntegrityBar({ hp, max, pulse, dropActi
         outline: dropActive ? '1px dashed var(--accent)' : '1px dashed transparent',
         background: dropActive ? 'var(--accent-soft)' : 'transparent',
       }}
-      aria-label={`Core integrity ${hp} of ${max}`}
+      aria-label={`Health ${hp} of ${max}`}
       role="meter"
       aria-valuenow={hp}
       aria-valuemin={0}
       aria-valuemax={max}
     >
-      <span className="hud-label">{dropActive ? 'Release to use' : 'Core integrity'}</span>
+      <span className="hud-label">{dropActive ? 'Let go to use' : `Health ${hp}/${max}`}</span>
       <div className="flex gap-1.5">
         {Array.from({ length: max }, (_, i) => {
           const filled = i < hp;
@@ -45,9 +48,9 @@ const IntegrityBar = forwardRef(function IntegrityBar({ hp, max, pulse, dropActi
               animate={{
                 scale: 1,
                 background: filled ? (critical ? '#ff3c5a' : accent) : 'rgba(255,255,255,0.06)',
-                opacity: filled ? (critical ? [1, 0.55, 1] : 1) : 0.6,
+                opacity: filled ? (blink ? [1, 0.55, 1] : 1) : 0.6,
               }}
-              transition={critical && filled ? { opacity: { repeat: Infinity, duration: 0.9 } } : { duration: 0.45 }}
+              transition={blink && filled ? { opacity: { repeat: Infinity, duration: 0.9 } } : { duration: 0.45 }}
             />
           );
         })}

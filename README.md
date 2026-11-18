@@ -21,68 +21,86 @@ The goal was to build a polished game with sound effects, responsive UI, and eng
 
 ---
 
-## 🎮 Gameplay
+## 🎮 How to play
 
-You are **SPARK**, a rogue android escaping the Lumen Spire. **Light burns. Darkness hides.** Climb 10 sublevels to the surface.
+You are **SPARK**, a little robot escaping a tower full of lights. **Light hurts you. Dark rooms are safe.**
 
-- You start with **5 core integrity**.
-- **Scan** a sector to reveal 3 doors. Each door gives a sensor reading: **COLD** (safe), **LUMEN** (light trap), **SIGNAL** (a choice) or **CACHE** (gear).
-- Sensors are about 70% accurate, so a reading can lie. An **Oracle Node** can make them perfect for a couple of sectors.
-- **Pick a door** to enter. The card flips to show what's really inside.
-- **Signals** give you a decision with a tradeoff: gamble, trade gear for repairs, accept a Mirror Protocol (heal now, but the next room turns into a trap), and more.
-- **Win** by reaching the surface. Escaping once unlocks **Endless Descent**, where traps get more common and the sensors get worse the deeper you go.
+1. **Draw doors.** Tap the deck or press `Space`. You get 3 doors.
+2. **Pick one.** Each door has a tag that hints at what's inside. Tags are *usually* right (about 7 in 10 times).
+3. **Climb.** Get through 10 floors without running out of health. Win once to unlock **Endless**.
 
-### Gear (3 slots)
-
-| Gear | Effect |
+| Tag | What it usually means |
 | --- | --- |
-| Shadow Cloak | Restore 1 integrity and slip through the current sector |
-| Light Shield | Absorb the next light trap |
-| Scanner Pulse | Reveal what's behind every door (use while choosing) |
-| Nano Patch | Restore 1 integrity |
-| Blink Drive | Reroll the doors (use while choosing) |
+| DARK | Safe. Nothing hurts you. |
+| BRIGHT | A light trap. Lose 1 or 2 health. |
+| EVENT | Something happens and you pick what to do. |
+| LOOT | A free item. |
 
-Click a gear slot to use it, or **drag it onto your core integrity bar**.
+### Items
+
+| Item | What it does |
+| --- | --- |
+| Shadow Cloak | Heal 1 and skip this floor |
+| Shield | Blocks the next bright trap |
+| X-Ray | Shows what is behind every door |
+| Repair Kit | Heal 1 |
+| Reroll | Swap the doors for new ones |
+
+Tap an item to use it, or **drag it onto your health**.
+
+### Upgrades, bosses and twists
+
+- **Upgrades:** after floors 2, 5 and 7 you pick 1 of 3 upgrades that last the whole run (Night Vision, Sunglasses, Lucky Coin, Extra Door, Spare Battery and more). Some combo well together.
+- **Bosses:** floors 5 and 10 have a boss. You stay on the floor until you find enough dark rooms to sneak past.
+- **Twists:** some floors get a special rule, like *Lights Out* (no tags), *Hurry!* (8-second timer), *Upside Down* (DARK and BRIGHT swapped) or *Lucky Floor* (marked free loot).
 
 ### Controls
 
 | Action | Mouse / touch | Keyboard |
 | --- | --- | --- |
-| Scan the next sector | Click or drag the scanner | `Space` / `Enter` |
-| Enter a door | Click it or drag it upward | `1` `2` `3` |
-| Answer a signal | Click an option | `1` `2` |
-| Use gear | Click or drag onto the core | `Q` `W` `E` |
-| Mute / help | Top-right icons | `M` / `H` |
-| Restart after a run | Panel button | `R` |
+| Draw doors | Tap or drag the deck | `Space` / `Enter` |
+| Pick a door | Tap it or drag it up | `1`–`4` |
+| Pick an event option or upgrade | Tap it | `1` `2` `3` |
+| Use an item | Tap it or drag onto health | `Q` `W` `E` `R` |
+| Sound / help | Top-right icons | `M` / `H` |
+| Play again | Panel button | `R` |
+
+### Comfort settings
+
+Open **⚙ Settings** to change:
+
+- **Motion:** Full, Reduced (no shaking, tilting or looping effects) or Off (no animation at all). Defaults to Reduced if your device asks for less motion.
+- **Glow:** turn the neon glow off for a flat, calm look.
+- **Sound**, and a button to show the beginner tips again.
 
 ---
 
-## 🌌 Sectors
+## 🌌 Looks
 
-Pick a sector on the title screen. Each one has its own palette, particles, card back and ambient synth drone:
+Pick a look on the title screen. Each one has its own colors, particles, card back and ambient music:
 
-- **Cryo Vault**: frozen data halls under permafrost
-- **Reactor Core**: molten conduits, ash in the air
-- **Bio Dome**: overgrown labs, glowing spores
+- **Ice Vault**: icy and quiet
+- **Fire Core**: hot and smoky
+- **Bio Garden**: green and glowing
 
 ---
 
 ## ✨ Features
 
-- 🧭 Real choices: three doors per sector with sensor readings that can lie
-- 🃏 Tactile cards: 3D tilt with a holographic sheen, flip reveals, and drag-to-act on the deck, doors and gear
-- 🗺️ A depth map showing your route and how far you are from the surface
-- 🔊 Generative ambient audio that gets tenser as integrity drops, plus a heartbeat when you're critical
-- 💥 Screen shake, damage flashes and haptics on supported phones
-- 📜 A typewriter transmission log that tells the story as you climb
-- ⌨️ Full keyboard play, ARIA labels, and reduced-motion support
-- 💾 Remembers your sector, sound setting, Endless unlock and best depth
+- 🧭 Real choices: doors with tags that can lie, items, risky events, and run-long upgrades
+- 👾 Boss floors and random floor twists so no two runs play the same
+- 💡 Short first-time tips instead of a wall of rules
+- 🃏 Tactile cards: 3D tilt, flip reveals, and drag-to-act on the deck, doors and items
+- 🗺️ A floor map showing your route and the boss floors ahead
+- 🔊 Ambient audio that gets tenser as your health drops, plus haptics on supported phones
+- ♿ Full keyboard play, ARIA labels, and Motion/Glow settings
+- 💾 Remembers your look, settings, Endless unlock and best run
 
 ### Code layout
 
 - `src/game/engine.js`: pure, seeded game reducer (all rules live here)
-- `src/data/`: room, item, signal content and sector themes
-- `src/hooks/`: React wiring (game loop, sound/visual effects, keyboard, tilt)
+- `src/data/`: rooms, items, upgrades, twists, bosses and looks
+- `src/hooks/`: React wiring (game loop, effects, settings, tips, keyboard, tilt)
 - `src/components/`: UI components
 - `src/utils/audio.js`: Web Audio engine (samples, synth blips, ambient drone)
 
@@ -121,13 +139,17 @@ npm run dev
 
 Then open `http://localhost:3000` in your browser.
 
+### Hosting
+
+The game deploys to **GitHub Pages** on every push to `main` (see `.github/workflows/deploy-pages.yml`). In the repo, go to **Settings → Pages** and set the source to **GitHub Actions**. It will be live at `https://harikayedidi.github.io/Shadows-Sparks/`.
+
 ---
 
 ## 🧪 What’s Next
 
-- Introduce a scoring system and stat-based leaderboards
-- Expand card types and procedural card generation using AI
-- Add multiple levels of difficulty (e.g. Easy, Normal, Hard) to increase replay value
+- A daily run with the same seed for everyone
+- A shop between floors and more upgrades that combo
+- Difficulty levels (Easy, Normal, Hard)
 
 ---
 

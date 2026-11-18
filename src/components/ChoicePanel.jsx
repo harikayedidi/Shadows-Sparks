@@ -11,7 +11,7 @@ const ChoicePanel = forwardRef(function ChoicePanel({ card, hasItems, onChoose }
       exit={{ opacity: 0, x: 20 }}
       aria-label={`${card.title}: choose`}
     >
-      <p className="hud-label" style={{ color: '#c18bff' }}>◈ Incoming signal</p>
+      <p className="hud-label" style={{ color: '#c18bff' }}>◈ Event · pick one</p>
       <h3 className="font-display text-lg mt-1 text-white">{card.title}</h3>
       <div className="mt-4 flex flex-col gap-2">
         {card.options.map((option, i) => {
@@ -27,7 +27,7 @@ const ChoicePanel = forwardRef(function ChoicePanel({ card, hasItems, onChoose }
               <kbd className="mt-0.5">{i + 1}</kbd>
               <span>
                 <span className="block font-semibold text-white">{option.label}</span>
-                <span className="block text-sm text-slate-400">{disabled ? 'You have no gear to trade.' : option.hint}</span>
+                <span className="block text-sm text-slate-400">{disabled ? 'You have no items to trade.' : option.hint}</span>
               </span>
             </motion.button>
           );

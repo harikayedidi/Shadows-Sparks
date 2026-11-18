@@ -3,30 +3,32 @@ import { motion } from 'framer-motion';
 import { HINTS } from '../data/cards';
 import { KIND_STYLE } from '../data/themes';
 import { useTilt } from '../hooks/useTilt';
+import { useSettings } from '../hooks/useSettings';
 
-const SignalBars = ({ color, strength }) => (
+const SignalBars = ({ color, strength, animate }) => (
   <div className="flex items-end gap-[2px] h-3" aria-hidden="true">
     {[0, 1, 2, 3].map((i) => (
       <motion.span
         key={i}
         className="w-[3px]"
         style={{ height: `${(i + 1) * 25}%`, background: i < strength ? color : 'rgba(255,255,255,0.15)' }}
-        animate={i < strength ? { opacity: [0.5, 1, 0.5] } : {}}
-        transition={{ repeat: Infinity, duration: 1 + i * 0.3 }}
+        animate={animate && i < strength ? { opacity: [0.5, 1, 0.5] } : {}}
+        transition={animate ? { repeat: Infinity, duration: 1 + i * 0.3 } : {}}
       />
     ))}
   </div>
 );
 
-// A sealed door: back art plus a sensor readout. Click, drag up, or press its number to enter.
-const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted, onEnter, onHover }, ref) {
+// A closed door with a tag that hints at what's inside. Click, drag up, or press its number to enter.
+const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted, compact = false, onEnter, onHover }, ref) {
   const tilt = useTilt(10);
+  const { full } = useSettings();
   const dragged = useRef(false);
   const shownKind = door.revealed ? door.card.kind : door.hint.kind;
   const style = KIND_STYLE[shownKind];
   const label = door.revealed ? style.label : HINTS[door.hint.kind].label;
   const line = door.revealed ? door.card.title : door.hint.line;
-  const strength = door.revealed ? 4 : 2;
+  const strength = door.revealed ? 4 : door.hint.kind === 'unknown' ? 0 : 2;
 
   return (
     <motion.div
@@ -62,19 +64,19 @@ const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted
         onClick={() => {
           if (!dragged.current) onEnter(index);
         }}
-        aria-label={`Door ${index + 1}. Sensor reads ${label}: ${line}`}
+        aria-label={`Door ${index + 1}. ${door.revealed ? 'Shown' : 'Tag says'} ${label}: ${line}`}
       >
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${cardBack})`, filter: 'brightness(0.4) saturate(0.8)' }} />
         <div className="absolute inset-0 card-grid" />
         <motion.div
           className="absolute inset-0"
-          style={{ boxShadow: `inset 0 0 0 1px ${style.color}88, inset 0 0 40px ${style.color}33` }}
-          animate={shownKind === 'trap' ? { opacity: [0.6, 1, 0.75, 1] } : { opacity: 1 }}
-          transition={shownKind === 'trap' ? { repeat: Infinity, duration: 1.2 } : {}}
+          style={{ border: `1px solid ${style.color}88`, boxShadow: `inset 0 0 40px ${style.color}33` }}
+          animate={shownKind === 'trap' && full ? { opacity: [0.6, 1, 0.75, 1] } : { opacity: 1 }}
+          transition={shownKind === 'trap' && full ? { repeat: Infinity, duration: 1.2 } : {}}
         />
 
         <div className="relative flex items-center justify-between p-2">
-          <span className="hud-label !text-[10px]">Door {index + 1}</span>
+          <span className={`hud-label !text-[10px] ${compact ? 'hidden sm:inline' : ''}`}>Door {index + 1}</span>
           <kbd>{index + 1}</kbd>
         </div>
 
@@ -82,8 +84,8 @@ const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted
           <motion.span
             className="text-4xl sm:text-5xl"
             style={{ color: style.color, textShadow: `0 0 18px ${style.color}` }}
-            animate={{ y: [0, -4, 0] }}
-            transition={{ repeat: Infinity, duration: 2.4, delay: index * 0.3 }}
+            animate={full ? { y: [0, -4, 0] } : { y: 0 }}
+            transition={full ? { repeat: Infinity, duration: 2.4, delay: index * 0.3 } : {}}
           >
             {style.icon}
           </motion.span>
@@ -94,7 +96,7 @@ const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted
             <span className="font-mono text-[10px] tracking-widest px-1.5" style={{ color: style.color, border: `1px solid ${style.color}66` }}>
               {door.revealed ? '✓ ' : ''}{label}
             </span>
-            <SignalBars color={style.color} strength={strength} />
+            <SignalBars color={style.color} strength={strength} animate={full} />
           </div>
           <p className="mt-1 text-[11px] sm:text-xs leading-snug text-slate-300">{line}</p>
         </div>

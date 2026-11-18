@@ -1,10 +1,10 @@
 // Sample-based SFX plus a Web Audio synth for ambience and UI blips.
 const SAMPLES = {
-  flip: '/sounds/card-flip.mp3',
-  damage: '/sounds/damage.mp3',
-  item: '/sounds/item-use.mp3',
-  victory: '/sounds/victory.mp3',
-  defeat: '/sounds/defeat.mp3',
+  flip: 'sounds/card-flip.mp3',
+  damage: 'sounds/damage.mp3',
+  item: 'sounds/item-use.mp3',
+  victory: 'sounds/victory.mp3',
+  defeat: 'sounds/defeat.mp3',
 };
 
 const PENTATONIC = [0, 3, 5, 7, 10, 12, 15];
@@ -19,7 +19,7 @@ class AudioEngine {
     this.samples = {};
     if (typeof Audio !== 'undefined') {
       for (const [name, src] of Object.entries(SAMPLES)) {
-        const audio = new Audio(src);
+        const audio = new Audio(`${import.meta.env.BASE_URL}${src}`);
         audio.preload = 'auto';
         audio.volume = 0.45;
         this.samples[name] = audio;

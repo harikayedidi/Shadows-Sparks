@@ -32,6 +32,19 @@ const HANDLERS = {
   },
   safe: () => audio.blip('safe'),
   signal: () => audio.blip('signal'),
+  offer: () => audio.blip('signal'),
+  upgrade: () => audio.play('item'),
+  twist: () => audio.blip('signal'),
+  boss: () => {
+    audio.blip('glitch');
+    vibrate([60, 40, 60]);
+  },
+  bossHit: () => audio.blip('shield'),
+  bossDown: () => {
+    audio.blip('heal');
+    audio.play('item');
+    vibrate([40, 30, 40]);
+  },
   victory: () => audio.play('victory'),
   defeat: () => {
     audio.play('defeat');
@@ -39,7 +52,7 @@ const HANDLERS = {
   },
 };
 
-const VISUAL = new Set(['damage', 'heal', 'shield', 'deny', 'item']);
+const VISUAL = new Set(['damage', 'heal', 'shield', 'deny', 'item', 'bossDown', 'upgrade']);
 
 // Plays sound/haptics for new engine fx and returns the latest visual pulse.
 export function useFx(fxList) {

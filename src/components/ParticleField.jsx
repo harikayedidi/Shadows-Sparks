@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 // Floating motes that drift with the sector theme and scatter from the pointer.
-export default function ParticleField({ particle, density = 70 }) {
+// With `still`, the motes are drawn once and stay put.
+export default function ParticleField({ particle, density = 70, still = false }) {
   const canvasRef = useRef(null);
   const particleRef = useRef(particle);
   particleRef.current = particle;
@@ -9,7 +10,6 @@ export default function ParticleField({ particle, density = 70 }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let width = 0;
     let height = 0;
@@ -68,7 +68,7 @@ export default function ParticleField({ particle, density = 70 }) {
         ctx.arc(m.x, m.y, m.r * 4, 0, Math.PI * 2);
         ctx.fill();
       }
-      if (!reduced) frame = requestAnimationFrame(draw);
+      if (!still) frame = requestAnimationFrame(draw);
     };
     frame = requestAnimationFrame(draw);
 
@@ -76,14 +76,18 @@ export default function ParticleField({ particle, density = 70 }) {
       pointer.x = e.clientX;
       pointer.y = e.clientY;
     };
-    window.addEventListener('resize', resize);
+    const onResize = () => {
+      resize();
+      if (still) draw(0);
+    };
+    window.addEventListener('resize', onResize);
     window.addEventListener('pointermove', onMove);
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onMove);
     };
-  }, [density]);
+  }, [density, still]);
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true" />;
 }

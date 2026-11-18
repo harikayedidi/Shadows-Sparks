@@ -1,16 +1,18 @@
 import { useCallback } from 'react';
 import { useSpring } from 'framer-motion';
+import { useSettings } from './useSettings';
 
 const SPRING = { stiffness: 220, damping: 20 };
 
 // Pointer-driven 3D tilt with a glare position exposed as --gx / --gy.
 export function useTilt(max = 12) {
+  const { full } = useSettings();
   const rotateX = useSpring(0, SPRING);
   const rotateY = useSpring(0, SPRING);
 
   const onPointerMove = useCallback(
     (e) => {
-      if (e.pointerType === 'touch') return;
+      if (!full || e.pointerType === 'touch') return;
       const el = e.currentTarget;
       const rect = el.getBoundingClientRect();
       const px = (e.clientX - rect.left) / rect.width;
@@ -20,7 +22,7 @@ export function useTilt(max = 12) {
       el.style.setProperty('--gx', `${px * 100}%`);
       el.style.setProperty('--gy', `${py * 100}%`);
     },
-    [max, rotateX, rotateY]
+    [full, max, rotateX, rotateY]
   );
 
   const onPointerLeave = useCallback(() => {

@@ -20,6 +20,8 @@ export function useGame(mode) {
       enter: (index) => act('ENTER', { index }),
       choose: (index) => act('CHOOSE', { index }),
       useItem: (slot) => act('USE_ITEM', { slot }),
+      pickUpgrade: (index) => act('PICK_UPGRADE', { index }),
+      timeout: () => act('TIMEOUT'),
     }),
     [act]
   );
