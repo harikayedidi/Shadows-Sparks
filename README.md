@@ -7,7 +7,17 @@ A quick sci-fi card game about a tiny robot escaping a tower full of lights. **L
 
 Pick a door, hope the tag isn't lying, and climb 10 floors. Along the way you grab items, pick upgrades that last the whole run, sneak past bosses, and deal with floors that change the rules. A run takes about 3 to 5 minutes, and no two play the same. Inspired by roguelikes like *Slay the Spire* and *Balatro*.
 
-Pick **Easy**, **Normal** or **Hard**. Works on desktop and phone, with full keyboard play and settings to turn motion and glow down or off.
+Pick **Easy**, **Normal** or **Hard**. Works on desktop and phone, with full keyboard play and settings to turn motion and glow down or off. New players get a quick how-to-play popup on their first run.
+
+## 📸 Screenshots
+
+| Pick a look and a difficulty | Pick a door |
+| --- | --- |
+| ![Title screen with themes and difficulty](docs/screenshots/title.png) | ![Three doors with tags, an upgrade and a Hurry twist](docs/screenshots/doors.png) |
+| **Sneak past a boss** | **Escape the tower** |
+| ![Boss floor: The Watcher](docs/screenshots/boss.png) | ![You escaped! Normal run cleared](docs/screenshots/win.png) |
+| **First time? Quick rules** | **Endless: go as far as you can** |
+| ![Welcome popup with the rules](docs/screenshots/welcome.png) | ![Endless run, 24 floors cleared](docs/screenshots/endless.png) |
 
 ---
 

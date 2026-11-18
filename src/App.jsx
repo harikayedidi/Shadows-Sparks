@@ -53,6 +53,7 @@ export default function App() {
   const best = bests[difficulty] ?? 0;
   const [run, setRun] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [welcome, setWelcome] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [motionLevel, setMotionLevel] = useState(() => {
     const saved = load('ss.motion', null);
@@ -94,6 +95,12 @@ export default function App() {
       audio.startAmbient(theme);
       audio.blip('select');
       setRun({ mode, difficulty, id: Date.now() });
+      // First run ever: show the rules over the (paused) game.
+      if (!load('ss.welcomed', false) && !load('ss.tips', []).length) {
+        save('ss.welcomed', true);
+        setWelcome(true);
+        setShowHelp(true);
+      }
     },
     [endlessUnlocked, theme, difficulty]
   );
@@ -134,6 +141,7 @@ export default function App() {
   const openSettings = useCallback(() => setShowSettings(true), []);
   const closeModals = useCallback(() => {
     setShowHelp(false);
+    setWelcome(false);
     setShowSettings(false);
   }, []);
   const paused = showHelp || showSettings;
@@ -194,7 +202,7 @@ export default function App() {
           />
         )}
       </AnimatePresence>
-      <AnimatePresence>{showHelp && <HelpModal onClose={closeModals} />}</AnimatePresence>
+      <AnimatePresence>{showHelp && <HelpModal welcome={welcome} onClose={closeModals} />}</AnimatePresence>
       <AnimatePresence>
         {showSettings && (
           <SettingsModal settings={settings} muted={muted} onChange={changeSettings} onToggleMute={toggleMute} onClose={closeModals} />

@@ -22,6 +22,7 @@ const readSeen = () => {
 export const resetTips = () => {
   try {
     localStorage.removeItem(KEY);
+    localStorage.removeItem('ss.welcomed');
   } catch {
     // Ignore unavailable storage.
   }
