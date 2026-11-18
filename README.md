@@ -1,23 +1,24 @@
 
-# Shadows & Sparks - Solo Card Survival Game  
+# Shadows & Sparks
 
-**Shadows & Sparks** is a fast-paced solo card survival game built entirely using AI agents inside **VS Code** — featuring animated cards, immersive sound, and mobile-first design.  
-The twist? **Light is dangerous. Darkness is safe.** Every card you draw is a gamble between survival and defeat.
+### ▶️ [Play it now](https://harikayedidi.github.io/Shadows-Sparks/)
+
+A quick sci-fi card game about a tiny robot escaping a tower full of lights. **Light hurts you. Dark rooms are safe.**
+
+Pick a door, hope the tag isn't lying, and climb 10 floors. Along the way you grab items, pick upgrades that last the whole run, sneak past bosses, and deal with floors that change the rules. No two runs play the same. Inspired by roguelikes like *Slay the Spire* and *Balatro*.
+
+Works on desktop and phone, with full keyboard play and settings to turn motion and glow down or off.
 
 ---
 
 ## 🚀 Project Summary
 
-This project explores how far **AI-assisted development** can go when building a complete game end-to-end inside VS Code. From concept to code to polish, everything was created using a combination of AI agents, prompt engineering, and LLM completions.
+This project explores how far **AI-assisted development** can go when building a complete game end-to-end inside VS Code.
 
-The goal was to build a polished game with sound effects, responsive UI, and engaging motion — with minimal manual coding.
+- **Version 1** was the original: a solo card game about light and dark, with animated cards, sound and a mobile-first layout.
+- **Version 2** turns it into a real run-based game: a futuristic look, upgrades, boss floors, floor twists, first-time tips, simple instructions, comfort settings, and hosting on GitHub Pages.
 
-- Built using **React**, **TailwindCSS**, and **Framer Motion** (via motion.dev)
-- Developed using **Roo Code Agent**, **GitHub Copilot**, **Claude 3.5 Sonnet**, and **ChatGPT/GPT-4o**
-- Prompts were refined, split, and iterated to develop game logic, styling, animations, accessibility, and UX
-- Card back images and visual assets were generated using **ChatGPT 4o image generation**
-
-> The initial version looked nothing like the final result — it evolved significantly across dozens of multi-turn prompts.
+Built with **React**, **Tailwind CSS** and **Framer Motion**. Card backs were generated with **ChatGPT 4o image generation**.
 
 ---
 
@@ -108,14 +109,14 @@ Pick a look on the title screen. Each one has its own colors, particles, card ba
 
 ## 🧠 AI Workflow
 
-This project was built entirely using AI tools inside VS Code:
+**Version 1** was built with **Roo Code Agent**, **GitHub Copilot**, **Claude 3.5 Sonnet** and **ChatGPT/GPT-4o**. Big tasks were broken into small prompts, then iterated over dozens of turns.
 
-- **Roo Code Agent** for writing logic, UI, and state  
-- Prompts iterated and structured using **GitHub Copilot** + **ChatGPT**  
-- Model used: **Claude 3.5 Sonnet**, occasionally switching to **GPT-4o**  
-- Card backs and visuals generated with **ChatGPT 4o (image mode)**  
-- Used Roo's rewrite tool to break large tasks into atomic prompts  
-- Final output includes code, layout, animation, accessibility, and logic — all AI-assisted
+**Version 2** was built with **GitHub Copilot in VS Code**:
+
+- Rewrote the rules as a pure, seeded game engine so they're easy to test and balance
+- Ran lots of simulated games to tune difficulty: following the tags wins about 3 in 4 runs, random clicking about 1 in 4
+- Played the game in a real browser on desktop and phone sizes to catch layout and accessibility issues
+- Set up GitHub Pages hosting with a deploy workflow
 
 ---
 
@@ -124,7 +125,8 @@ This project was built entirely using AI tools inside VS Code:
 - **Frontend**: React  
 - **Styling**: Tailwind CSS  
 - **Animations**: motion.dev (Framer Motion)  
-- **AI Tooling**: Roo Code Agent, Claude 3.5, ChatGPT 4o, GitHub Copilot  
+- **Build and hosting**: Vite, GitHub Pages  
+- **AI Tooling**: GitHub Copilot, Roo Code Agent, Claude, ChatGPT 4o  
 
 ---
 
@@ -141,7 +143,7 @@ Then open `http://localhost:3000` in your browser.
 
 ### Hosting
 
-The game deploys to **GitHub Pages** on every push to `main` (see `.github/workflows/deploy-pages.yml`). In the repo, go to **Settings → Pages** and set the source to **GitHub Actions**. It will be live at `https://harikayedidi.github.io/Shadows-Sparks/`.
+The game is live at **https://harikayedidi.github.io/Shadows-Sparks/**. It redeploys to GitHub Pages on every push to `main` (see `.github/workflows/deploy-pages.yml`).
 
 ---
 
