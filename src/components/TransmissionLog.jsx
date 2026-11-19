@@ -4,7 +4,7 @@ import Typewriter from './Typewriter';
 import { useSettings } from '../hooks/useSettings';
 
 const TONE = {
-  info: 'text-slate-400',
+  info: 'text-slate-300',
   story: 'text-slate-200',
   good: 'text-emerald-300',
   warn: 'text-amber-300',
@@ -37,11 +37,11 @@ export default function TransmissionLog({ entries }) {
           return (
             <motion.li
               key={entry.id}
-              className={`font-mono text-xs sm:text-sm leading-snug ${TONE[entry.tone] ?? TONE.info} ${latest ? '' : 'opacity-70'}`}
+              className={`font-mono text-sm leading-snug ${TONE[entry.tone] ?? TONE.info} ${latest ? '' : 'opacity-85'}`}
               initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: latest ? 1 : 0.7, x: 0 }}
+              animate={{ opacity: latest ? 1 : 0.85, x: 0 }}
             >
-              <span className="text-slate-600 mr-2">&gt;</span>
+              <span className="text-slate-400 mr-2">&gt;</span>
               {latest ? <Typewriter text={entry.text} speed={12} /> : entry.text}
             </motion.li>
           );

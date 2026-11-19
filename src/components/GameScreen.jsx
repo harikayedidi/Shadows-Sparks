@@ -6,6 +6,7 @@ import { useFx } from '../hooks/useFx';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { useSettings } from '../hooks/useSettings';
 import { useTips } from '../hooks/useTips';
+import { useMobile } from '../hooks/useMobile';
 import audio from '../utils/audio';
 import Hud from './Hud';
 import DeckScanner from './DeckScanner';
@@ -62,6 +63,8 @@ export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlo
   const [tip, dismissTip] = useTips(state);
   const shake = useAnimationControls();
   const integrityRef = useRef(null);
+  const stageRef = useRef(null);
+  const mobile = useMobile();
   const [dragState, setDragState] = useState(null);
   const [summary, setSummary] = useState(null);
 
@@ -79,6 +82,22 @@ export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlo
   }, [state.hp]);
 
   useEffect(() => () => audio.setTension(0), []);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // On phones the board is taller than the screen, so bring each new pick into view.
+  useEffect(() => {
+    if (!mobile) return undefined;
+    if (!['choosing', 'deciding', 'upgrading'].includes(state.phase)) return undefined;
+    const timer = setTimeout(() => {
+      const stage = stageRef.current;
+      const target = state.phase === 'choosing' ? stage : stage?.querySelector('[data-pick]');
+      target?.scrollIntoView({ block: 'center', behavior: full ? 'smooth' : 'auto' });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [state.phase, state.depth, mobile, full]);
 
   useEffect(() => {
     if (!state.result || summary) return;
@@ -166,7 +185,7 @@ export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlo
             <DeckScanner cardBack={theme.cardBack} ready={state.phase === 'ready'} onDeal={actions.deal} />
           </div>
 
-          <div className="flex flex-col items-center gap-3 min-h-[calc(var(--card-h)+1rem)] justify-center" style={doorStyle}>
+          <div ref={stageRef} className="flex flex-col items-center gap-3 min-h-[calc(var(--card-h)+1rem)] justify-center scroll-mb-4" style={doorStyle}>
             {countdown && (
               <Countdown key={state.doors.map((d) => d.id).join()} seconds={level.timer} paused={paused} onDone={actions.timeout} />
             )}
@@ -220,7 +239,7 @@ export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlo
           </div>
         </main>
 
-        <p className="text-center hud-label min-h-[1.25rem]" aria-live="polite">
+        <p className="text-center hud-label !text-sm !tracking-[0.12em] min-h-[1.5rem]" aria-live="polite">
           {promptText} {promptKeys && promptKeys.split(' ').map((k) => <kbd key={k} className="ml-1">{k}</kbd>)}
         </p>
 

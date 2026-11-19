@@ -33,7 +33,7 @@ const IntegrityBar = forwardRef(function IntegrityBar({ hp, max, pulse, dropActi
           return (
             <motion.div
               key={`${i}-${pulse?.type === 'damage' || pulse?.type === 'heal' ? pulse.id : 0}`}
-              className="w-6 h-7 sm:w-7 sm:h-8"
+              className="w-8 h-9"
               style={{
                 clipPath: HEX,
                 boxShadow: filled ? `0 0 14px ${color}` : 'none',

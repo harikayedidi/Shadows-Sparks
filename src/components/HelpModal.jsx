@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS } from '../data/cards';
 import { KIND_STYLE } from '../data/themes';
+import { useMobile } from '../hooks/useMobile';
 
 const TAGS = [
   ['safe', 'DARK', 'Safe. Nothing hurts you.'],
@@ -11,12 +12,13 @@ const TAGS = [
 ];
 
 const STEPS = [
-  ['Draw doors', <>Tap the deck or press <kbd>Space</kbd>. You get 3 doors.</>],
+  ['Draw doors', <>Tap the deck<span className="keys-only"> or press <kbd>Space</kbd></span>. You get 3 doors.</>],
   ['Pick one', <>Each door has a tag that hints what's inside. Tags are <b>usually</b> right, but not always!</>],
   ['Climb', <>Get through 10 floors without running out of health. That's it!</>],
 ];
 
 export default function HelpModal({ onClose, welcome = false }) {
+  const mobile = useMobile();
   const startRef = useRef(null);
   // Focus the start button without scrolling the rules out of view.
   useEffect(() => startRef.current?.focus({ preventScroll: true }), []);
@@ -50,14 +52,16 @@ export default function HelpModal({ onClose, welcome = false }) {
           </div>
           <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <p className="mt-2 text-slate-300">You are SPARK, a little robot. Light hurts you. Dark rooms are safe.</p>
+        <p className="mt-2 text-base text-slate-300">You are SPARK, a little robot. Light hurts you. Dark rooms are safe.</p>
 
-        <ol className="mt-5 grid sm:grid-cols-3 gap-3">
+        <ol className="mt-5 grid sm:grid-cols-3 gap-2 sm:gap-3">
           {STEPS.map(([title, text], i) => (
-            <li key={title} className="bg-white/5 p-3">
-              <span className="font-display text-2xl" style={{ color: 'var(--accent)' }}>{i + 1}</span>
-              <b className="block text-white mt-1">{title}</b>
-              <span className="block text-sm text-slate-300 mt-1">{text}</span>
+            <li key={title} className="bg-white/5 p-3 flex gap-3 sm:block">
+              <span className="font-display text-2xl leading-none" style={{ color: 'var(--accent)' }}>{i + 1}</span>
+              <span>
+                <b className="block text-white sm:mt-1">{title}</b>
+                <span className="block text-sm text-slate-300 mt-1">{text}</span>
+              </span>
             </li>
           ))}
         </ol>
@@ -66,7 +70,7 @@ export default function HelpModal({ onClose, welcome = false }) {
         <div className="grid sm:grid-cols-2 gap-2">
           {TAGS.map(([kind, label, text]) => (
             <div key={kind} className="flex items-center gap-3 bg-white/5 px-3 py-2">
-              <span className="font-mono text-xs px-2 py-0.5 w-16 text-center" style={{ color: KIND_STYLE[kind].color, border: `1px solid ${KIND_STYLE[kind].color}66` }}>
+              <span className="font-mono text-xs px-2 py-0.5 w-20 shrink-0 text-center" style={{ color: KIND_STYLE[kind].color, border: `1px solid ${KIND_STYLE[kind].color}66` }}>
                 {label}
               </span>
               <span className="text-sm text-slate-300">{text}</span>
@@ -76,11 +80,12 @@ export default function HelpModal({ onClose, welcome = false }) {
 
         {welcome ? (
           <>
-            <p className="mt-5 text-sm text-slate-400">Items, bosses and twists get a quick tip the first time you see them. Tap the <b>?</b> button anytime to see all the rules.</p>
-            <p className="mt-2 text-xs text-slate-500">Too much flashing? Open ⚙ Settings to turn down motion and glow.</p>
-            <div className="mt-6 flex justify-center">
-              <button ref={startRef} className="btn-neon text-sm" onClick={onClose}>
-                Got it, let's play!
+            <p className="mt-5 text-sm text-slate-300">Items, bosses and twists get a quick tip the first time you see them. {mobile ? <>Tap <b>⚙</b> anytime to see all the rules.</> : <>Tap the <b>?</b> button anytime to see all the rules.</>}</p>
+            <p className="mt-2 text-sm text-slate-300">Too much flashing? Open ⚙ Settings to turn down motion and glow.</p>
+            {/* Sticky so the start button is always reachable on short screens. */}
+            <div className="sticky -bottom-6 sm:-bottom-8 -mx-6 sm:-mx-8 mt-4 px-6 pt-3 pb-5 flex justify-center bg-gradient-to-t from-[#04070f] from-70% to-transparent">
+              <button ref={startRef} className="btn-neon text-base" onClick={onClose}>
+                Got it!
               </button>
             </div>
           </>
@@ -93,12 +98,12 @@ export default function HelpModal({ onClose, welcome = false }) {
                   <span className="text-xl leading-none" style={{ color: 'var(--accent)' }}>{item.glyph}</span>
                   <span className="text-sm">
                     <b className="text-slate-100">{item.title}</b>
-                    <span className="block text-slate-400">{item.description}</span>
+                    <span className="block text-slate-300">{item.description}</span>
                   </span>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-sm text-slate-400">Tap an item to use it, or drag it onto your health.</p>
+            <p className="mt-2 text-sm text-slate-300">Tap an item to use it, or drag it onto your health.</p>
 
             <h3 className="hud-label mt-6 mb-2">Along the way</h3>
             <ul className="space-y-2 text-sm text-slate-300">
@@ -108,8 +113,8 @@ export default function HelpModal({ onClose, welcome = false }) {
               <li><b className="text-white">Difficulty:</b> pick Easy, Normal or Hard on the title screen. Beat Normal to unlock Hard.</li>
             </ul>
 
-            <h3 className="hud-label mt-6 mb-2">Keys</h3>
-            <p className="text-sm text-slate-300 flex flex-wrap gap-x-5 gap-y-2">
+            <h3 className="keys-only hud-label mt-6 mb-2">Keys</h3>
+            <p className="keys-only text-sm text-slate-300 flex flex-wrap gap-x-5 gap-y-2">
               <span><kbd>Space</kbd> draw doors</span>
               <span><kbd>1</kbd>–<kbd>4</kbd> pick</span>
               <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd> items</span>
@@ -117,7 +122,7 @@ export default function HelpModal({ onClose, welcome = false }) {
               <span><kbd>H</kbd> help</span>
               <span><kbd>Esc</kbd> close</span>
             </p>
-            <p className="mt-4 text-xs text-slate-500">Too much flashing? Open ⚙ Settings to turn down motion and glow.</p>
+            <p className="mt-4 text-sm text-slate-300">Too much flashing? Open ⚙ Settings to turn down motion and glow.</p>
           </>
         )}
       </motion.div>

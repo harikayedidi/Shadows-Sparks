@@ -5,6 +5,7 @@ const ChoicePanel = forwardRef(function ChoicePanel({ card, hasItems, onChoose }
   return (
     <motion.section
       ref={ref}
+      data-pick
       className="panel p-4 sm:p-5 w-[min(24rem,92vw)]"
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
@@ -27,7 +28,7 @@ const ChoicePanel = forwardRef(function ChoicePanel({ card, hasItems, onChoose }
               <kbd className="mt-0.5">{i + 1}</kbd>
               <span>
                 <span className="block font-semibold text-white">{option.label}</span>
-                <span className="block text-sm text-slate-400">{disabled ? 'You have no items to trade.' : option.hint}</span>
+                <span className="block text-sm text-slate-300">{disabled ? 'You have no items to trade.' : option.hint}</span>
               </span>
             </motion.button>
           );

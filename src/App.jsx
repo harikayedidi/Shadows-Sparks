@@ -52,8 +52,11 @@ export default function App() {
   const [bests, setBests] = useState(() => ({ normal: load('ss.best', 0) || legacyBest(), ...load('ss.bests', {}) }));
   const best = bests[difficulty] ?? 0;
   const [run, setRun] = useState(null);
-  const [showHelp, setShowHelp] = useState(false);
-  const [welcome, setWelcome] = useState(false);
+  // First visit ever: open the rules on the title screen. Older players (tips seen or a win) skip it.
+  const [welcome, setWelcome] = useState(
+    () => !load('ss.welcomed', false) && !load('ss.tips', []).length && !load('ss.unlocked', false) && !legacyUnlocked()
+  );
+  const [showHelp, setShowHelp] = useState(welcome);
   const [showSettings, setShowSettings] = useState(false);
   const [motionLevel, setMotionLevel] = useState(() => {
     const saved = load('ss.motion', null);
@@ -71,6 +74,10 @@ export default function App() {
     save('ss.glow', glow);
     document.documentElement.dataset.glow = glow ? 'on' : 'off';
   }, [glow]);
+
+  useEffect(() => {
+    if (welcome) save('ss.welcomed', true);
+  }, [welcome]);
 
   useEffect(() => save('ss.theme', themeId), [themeId]);
   useEffect(() => save('ss.unlocked', endlessUnlocked), [endlessUnlocked]);
@@ -95,12 +102,6 @@ export default function App() {
       audio.startAmbient(theme);
       audio.blip('select');
       setRun({ mode, difficulty, id: Date.now() });
-      // First run ever: show the rules over the (paused) game.
-      if (!load('ss.welcomed', false) && !load('ss.tips', []).length) {
-        save('ss.welcomed', true);
-        setWelcome(true);
-        setShowHelp(true);
-      }
     },
     [endlessUnlocked, theme, difficulty]
   );
@@ -146,6 +147,14 @@ export default function App() {
   }, []);
   const paused = showHelp || showSettings;
   const toMenu = useCallback(() => setRun(null), []);
+  const helpFromSettings = useCallback(() => {
+    setShowSettings(false);
+    setShowHelp(true);
+  }, []);
+  const quitFromSettings = useCallback(() => {
+    closeModals();
+    setRun(null);
+  }, [closeModals]);
 
   useKeyboard(
     {
@@ -205,7 +214,15 @@ export default function App() {
       <AnimatePresence>{showHelp && <HelpModal welcome={welcome} onClose={closeModals} />}</AnimatePresence>
       <AnimatePresence>
         {showSettings && (
-          <SettingsModal settings={settings} muted={muted} onChange={changeSettings} onToggleMute={toggleMute} onClose={closeModals} />
+          <SettingsModal
+            settings={settings}
+            muted={muted}
+            onChange={changeSettings}
+            onToggleMute={toggleMute}
+            onHelp={helpFromSettings}
+            onQuit={run ? quitFromSettings : undefined}
+            onClose={closeModals}
+          />
         )}
       </AnimatePresence>
       </MotionConfig>

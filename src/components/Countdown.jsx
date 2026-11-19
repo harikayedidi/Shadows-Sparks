@@ -20,7 +20,7 @@ export default function Countdown({ seconds, paused, onDone }) {
   const urgent = left <= 3000;
   return (
     <div className="w-full max-w-md mx-auto" role="timer" aria-label={`${Math.ceil(left / 1000)} seconds left`}>
-      <div className="flex justify-between hud-label !text-[10px] mb-1">
+      <div className="flex justify-between hud-label mb-1">
         <span>⏱ Hurry!{paused ? ' (paused)' : ''}</span>
         <span style={{ color: urgent ? '#ff3c5a' : undefined }}>{Math.ceil(left / 1000)}s</span>
       </div>

@@ -45,7 +45,7 @@ export const KIND_STYLE = {
   choice: { label: 'EVENT', color: '#c18bff', icon: '◈' },
   supply: { label: 'LOOT', color: '#ffc857', icon: '▣' },
   boss: { label: 'BOSS', color: '#ff3c5a', icon: '✹' },
-  unknown: { label: '???', color: '#6b7a90', icon: '?' },
+  unknown: { label: '???', color: '#8b98ad', icon: '?' },
 };
 
 export default themes;

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { DIFFICULTIES } from '../data/cards';
+import { useMobile } from '../hooks/useMobile';
 import Typewriter from './Typewriter';
 
 export default function TitleScreen({
@@ -17,24 +18,33 @@ export default function TitleScreen({
   onHelp,
   onSettings,
 }) {
+  const mobile = useMobile();
   return (
     <motion.main
-      className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-10 text-center"
+      className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-10 md:py-10 text-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.04, filter: 'blur(6px)' }}
       transition={{ duration: 0.5 }}
     >
       <div className="absolute top-4 right-4 flex gap-2">
-        <button className="icon-btn" onClick={onToggleMute} aria-label={muted ? 'Turn sound on' : 'Turn sound off'} title="Sound (M)">
-          {muted ? '🔇' : '🔊'}
-        </button>
-        <button className="icon-btn" onClick={onSettings} aria-label="Settings" title="Settings">
-          ⚙
-        </button>
-        <button className="icon-btn" onClick={onHelp} aria-label="How to play" title="How to play (H)">
-          ?
-        </button>
+        {mobile ? (
+          <button className="icon-btn icon-btn-lg" onClick={onSettings} aria-label="Settings and help" title="Settings">
+            ⚙
+          </button>
+        ) : (
+          <>
+            <button className="icon-btn" onClick={onToggleMute} aria-label={muted ? 'Turn sound on' : 'Turn sound off'} title="Sound (M)">
+              {muted ? '🔇' : '🔊'}
+            </button>
+            <button className="icon-btn" onClick={onSettings} aria-label="Settings" title="Settings">
+              ⚙
+            </button>
+            <button className="icon-btn" onClick={onHelp} aria-label="How to play" title="How to play (H)">
+              ?
+            </button>
+          </>
+        )}
       </div>
 
       <p className="hud-label mb-4">A tiny robot · A tower full of lights</p>
@@ -78,7 +88,7 @@ export default function TitleScreen({
                 <div className="mt-2 font-display text-xs sm:text-sm tracking-widest" style={{ color: t.accent }}>
                   {t.name}
                 </div>
-                <div className="hidden sm:block text-xs text-slate-400">{t.tagline}</div>
+                <div className="hidden sm:block text-sm text-slate-300">{t.tagline}</div>
               </motion.button>
             );
           })}
@@ -99,7 +109,7 @@ export default function TitleScreen({
                 disabled={locked}
                 title={locked ? 'Beat Normal to unlock Hard' : d.text}
                 onClick={() => onSelectDifficulty(d.id)}
-                className="px-2 py-2 border font-display text-sm tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 py-3 border font-display text-sm tracking-widest disabled:cursor-not-allowed disabled:text-slate-400"
                 style={{
                   borderColor: active ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
                   background: active ? 'var(--accent-soft)' : 'rgba(0,0,0,0.3)',
@@ -111,14 +121,14 @@ export default function TitleScreen({
             );
           })}
         </div>
-        <p className="mt-2 text-xs text-slate-400 min-h-[1rem]">
+        <p className="mt-2 text-sm text-slate-300 min-h-[1.25rem]">
           {DIFFICULTIES[difficulty].text}
           {!hardUnlocked && ' Beat Normal to unlock Hard.'}
         </p>
       </fieldset>
 
       <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center">
-        <button className="btn-neon text-sm sm:text-base" onClick={() => onStart('standard')}>
+        <button className="btn-neon text-base" onClick={() => onStart('standard')}>
           Play <kbd className="ml-2 !text-black !border-black/40 !bg-black/10">Enter</kbd>
         </button>
         <button
@@ -130,9 +140,9 @@ export default function TitleScreen({
           {endlessUnlocked ? `Endless${best ? ` · best ${best} floors` : ''}` : '🔒 Endless'}
         </button>
       </div>
-      {!endlessUnlocked && <p className="mt-3 text-xs text-slate-500">Win once to unlock Endless.</p>}
+      {!endlessUnlocked && <p className="mt-3 text-sm text-slate-300">Win once to unlock Endless.</p>}
 
-      <p className="mt-12 hud-label flex flex-wrap justify-center gap-x-4 gap-y-2">
+      <p className="keys-only mt-12 hud-label flex flex-wrap justify-center gap-x-4 gap-y-2">
         <span><kbd>Space</kbd> draw doors</span>
         <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> pick</span>
         <span><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> items</span>

@@ -25,7 +25,7 @@ function Segmented({ label, value, options, onChange }) {
               onClick={() => onChange(id)}
             >
               <span className="block font-display text-sm text-white">{name}</span>
-              <span className="block text-xs text-slate-400 leading-tight">{hint}</span>
+              <span className="block text-sm text-slate-300 leading-tight">{hint}</span>
             </button>
           );
         })}
@@ -34,7 +34,7 @@ function Segmented({ label, value, options, onChange }) {
   );
 }
 
-export default function SettingsModal({ settings, muted, onChange, onToggleMute, onClose }) {
+export default function SettingsModal({ settings, muted, onChange, onToggleMute, onHelp, onQuit, onClose }) {
   const [tipsReset, setTipsReset] = useState(false);
 
   return (
@@ -49,7 +49,7 @@ export default function SettingsModal({ settings, muted, onChange, onToggleMute,
       aria-label="Settings"
     >
       <motion.div
-        className="panel w-full max-w-md p-6 text-left flex flex-col gap-5"
+        className="panel w-full max-w-md max-h-[92vh] overflow-y-auto p-6 text-left flex flex-col gap-5"
         initial={{ y: 30 }}
         animate={{ y: 0 }}
         onClick={(e) => e.stopPropagation()}
@@ -57,6 +57,11 @@ export default function SettingsModal({ settings, muted, onChange, onToggleMute,
         <div className="flex items-start justify-between">
           <h2 className="font-display text-2xl neon-text">Settings</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <div className={`grid gap-2 ${onQuit ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <button className="btn-ghost text-sm" onClick={onHelp}>? How to play</button>
+          {onQuit && <button className="btn-ghost text-sm" onClick={onQuit}>⏏ Quit run</button>}
         </div>
 
         <Segmented label="Motion" value={settings.motion} options={MOTION_OPTIONS} onChange={(motion) => onChange({ motion })} />
@@ -80,7 +85,7 @@ export default function SettingsModal({ settings, muted, onChange, onToggleMute,
         />
 
         <button
-          className="btn-ghost text-xs self-start"
+          className="btn-ghost text-sm self-start"
           onClick={() => {
             resetTips();
             setTipsReset(true);

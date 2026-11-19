@@ -68,13 +68,13 @@ export default function GameOverPanel({ result, mode, difficulty, depth, best, n
         {hardJustUnlocked && <p className="mt-2 font-display text-sm tracking-widest" style={{ color: 'var(--accent)' }}>HARD MODE UNLOCKED</p>}
 
         <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-center">
-          <button className="btn-neon text-xs whitespace-nowrap" onClick={() => onRestart(mode)} autoFocus>
+          <button className="btn-neon text-sm whitespace-nowrap" onClick={() => onRestart(mode)} autoFocus>
             {won ? 'Play again' : 'Try again'} <kbd className="ml-1 !text-black !border-black/40 !bg-black/10">R</kbd>
           </button>
           {endlessUnlocked && mode !== 'endless' && (
-            <button className="btn-ghost text-xs whitespace-nowrap" onClick={onEndless}>Try Endless</button>
+            <button className="btn-ghost text-sm whitespace-nowrap" onClick={onEndless}>Try Endless</button>
           )}
-          <button className="btn-ghost text-xs whitespace-nowrap" onClick={onMenu}>Menu</button>
+          <button className="btn-ghost text-sm whitespace-nowrap" onClick={onMenu}>Menu</button>
         </div>
       </motion.div>
     </motion.div>

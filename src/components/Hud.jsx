@@ -1,11 +1,12 @@
 import { forwardRef } from 'react';
 import { UPGRADES } from '../data/cards';
+import { useMobile } from '../hooks/useMobile';
 import IntegrityBar from './IntegrityBar';
 import DepthMap from './DepthMap';
 
 const Chip = ({ color, children, title }) => (
   <span
-    className="font-mono text-[10px] sm:text-xs tracking-widest px-2 py-0.5 whitespace-nowrap"
+    className="font-mono text-xs tracking-widest px-2 py-0.5 whitespace-nowrap"
     style={{ color, border: `1px solid ${color}88`, boxShadow: `0 0 10px ${color}33` }}
     title={title}
   >
@@ -17,6 +18,7 @@ const Hud = forwardRef(function Hud(
   { hp, maxHp, accent, mode, difficulty, goal, depth, history, shield, oracle, corrupted, upgrades, pulse, dropActive, muted, onToggleMute, onHelp, onSettings, onMenu },
   integrityRef
 ) {
+  const mobile = useMobile();
   return (
     <header className="panel flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-3 sm:px-5 py-3">
       <IntegrityBar ref={integrityRef} hp={hp} max={maxHp} accent={accent} pulse={pulse} dropActive={dropActive} />
@@ -31,12 +33,18 @@ const Hud = forwardRef(function Hud(
           {oracle > 0 && <Chip color="#c18bff" title="Tags are always right">◎ TRUE TAGS ×{oracle}</Chip>}
           {corrupted && <Chip color="#ff3c5a" title="Your next room will be a trap">⚠ CURSED</Chip>}
         </div>
-        <button className="icon-btn" onClick={onToggleMute} aria-label={muted ? 'Turn sound on' : 'Turn sound off'} title="Sound (M)">
-          {muted ? '🔇' : '🔊'}
-        </button>
-        <button className="icon-btn" onClick={onSettings} aria-label="Settings" title="Settings">⚙</button>
-        <button className="icon-btn" onClick={onHelp} aria-label="How to play" title="How to play (H)">?</button>
-        <button className="icon-btn" onClick={onMenu} aria-label="Quit to menu" title="Quit to menu">⏏</button>
+        {mobile ? (
+          <button className="icon-btn icon-btn-lg" onClick={onSettings} aria-label="Settings, help and quit" title="Settings">⚙</button>
+        ) : (
+          <>
+            <button className="icon-btn" onClick={onToggleMute} aria-label={muted ? 'Turn sound on' : 'Turn sound off'} title="Sound (M)">
+              {muted ? '🔇' : '🔊'}
+            </button>
+            <button className="icon-btn" onClick={onSettings} aria-label="Settings" title="Settings">⚙</button>
+            <button className="icon-btn" onClick={onHelp} aria-label="How to play" title="How to play (H)">?</button>
+            <button className="icon-btn" onClick={onMenu} aria-label="Quit to menu" title="Quit to menu">⏏</button>
+          </>
+        )}
       </div>
 
       {upgrades.length > 0 && (
@@ -45,7 +53,7 @@ const Hud = forwardRef(function Hud(
           {upgrades.map((id) => (
             <span
               key={id}
-              className="font-mono text-[11px] px-2 py-0.5 bg-white/5 border border-white/10 text-slate-200"
+              className="font-mono text-xs px-2 py-0.5 bg-white/5 border border-white/10 text-slate-200"
               title={`${UPGRADES[id].title}: ${UPGRADES[id].text}`}
             >
               <span style={{ color: 'var(--accent)' }}>{UPGRADES[id].glyph}</span> {UPGRADES[id].title}

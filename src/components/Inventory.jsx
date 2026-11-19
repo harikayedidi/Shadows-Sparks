@@ -17,9 +17,9 @@ function ItemSlot({ itemId, slot, dropTargetRef, onUse, onDragState }) {
   const item = ITEMS[itemId];
 
   return (
-    <div className="relative w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]">
+    <div className="relative w-[4.75rem] h-[4.75rem] sm:w-20 sm:h-20">
       <div className="absolute inset-0 border border-dashed border-white/15 grid place-items-center">
-        <kbd className="opacity-60">{KEYS[slot]}</kbd>
+        <kbd>{KEYS[slot]}</kbd>
       </div>
       <AnimatePresence>
         {item && (
@@ -57,10 +57,10 @@ function ItemSlot({ itemId, slot, dropTargetRef, onUse, onDragState }) {
             }}
             aria-label={`Use ${item.title} (${KEYS[slot]}): ${item.description}`}
           >
-            <span className="text-2xl leading-none" style={{ color: 'var(--accent)', textShadow: '0 0 10px var(--accent)' }}>
+            <span className="text-3xl leading-none" style={{ color: 'var(--accent)', textShadow: '0 0 10px var(--accent)' }}>
               {item.glyph}
             </span>
-            <span className="mt-1 font-mono text-[8px] sm:text-[9px] tracking-wider text-slate-300 uppercase text-center leading-tight px-0.5">
+            <span className="mt-1 font-mono text-xs text-slate-200 uppercase text-center leading-tight px-0.5">
               {item.title}
             </span>
             <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 text-xs text-left bg-black/90 border border-white/10 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">

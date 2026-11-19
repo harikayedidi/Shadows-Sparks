@@ -17,7 +17,7 @@ export default function TipToast({ tip, onDismiss }) {
           >
             <span className="text-xl leading-none" style={{ color: 'var(--accent)' }} aria-hidden="true">💡</span>
             <p className="flex-1 text-sm sm:text-base text-slate-100 leading-snug">{tip.text}</p>
-            <button className="hud-label !text-xs underline shrink-0" onClick={onDismiss}>Got it</button>
+            <button className="hud-label underline shrink-0" onClick={onDismiss}>Got it</button>
           </motion.div>
         )}
       </AnimatePresence>

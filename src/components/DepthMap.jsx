@@ -39,7 +39,7 @@ export default function DepthMap({ mode, difficulty, goal, depth, history }) {
     <div className="flex flex-col gap-1 min-w-0" aria-label={goal && depth >= goal ? 'Escaped' : `Floor ${depth + 1}${goal ? ` of ${goal}` : ''}`}>
       <span className="hud-label">
         {mode === 'endless' ? `Floor ${depth + 1}` : depth >= goal ? 'Escaped!' : `Floor ${depth + 1} of ${goal}`}
-        {difficulty && <span className="text-slate-500"> · {difficulty}</span>}
+        {difficulty && <span className="text-slate-300"> · {difficulty}</span>}
       </span>
       <div className="flex items-center">
         {nodes.map((node, i) => {
@@ -54,7 +54,7 @@ export default function DepthMap({ mode, difficulty, goal, depth, history }) {
               )}
               <div className="relative flex flex-col items-center" title={node.entry ? `${node.label}: ${node.entry.title}` : node.boss ? `${node.label}: Boss` : node.label}>
                 <motion.div
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rotate-45"
+                  className="w-3.5 h-3.5 rotate-45"
                   style={{
                     background: color ?? (node.exit ? 'transparent' : node.boss ? 'rgba(255,60,90,0.25)' : 'rgba(255,255,255,0.08)'),
                     border: node.exit ? '1px solid var(--accent)' : node.boss && !node.entry ? '1px solid #ff3c5a' : 'none',
@@ -65,13 +65,13 @@ export default function DepthMap({ mode, difficulty, goal, depth, history }) {
                 />
                 {node.current && (
                   <motion.div
-                    className="absolute top-[-3px] w-[18px] h-[18px] sm:w-5 sm:h-5 border rotate-45"
+                    className="absolute top-[-3px] w-5 h-5 border rotate-45"
                     style={{ borderColor: 'var(--accent)' }}
                     animate={{ opacity: full ? [0.2, 1, 0.2] : 1 }}
                     transition={full ? { repeat: Infinity, duration: 1.4 } : {}}
                   />
                 )}
-                <span className={`hidden md:block mt-1.5 font-mono text-[9px] tracking-wider ${node.boss ? 'text-rose-400' : 'text-slate-500'}`}>
+                <span className={`hidden md:block mt-1.5 font-mono text-xs ${node.boss ? 'text-rose-400' : 'text-slate-400'}`}>
                   {node.boss ? '☠' : node.label}
                 </span>
               </div>

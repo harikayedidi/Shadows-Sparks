@@ -58,7 +58,7 @@ export default function DeckScanner({ cardBack, onDeal, ready }) {
           )}
         </motion.button>
       </div>
-      <span className="hud-label mt-3">
+      <span className="keys-only hud-label mt-3">
         <kbd>Space</kbd>
       </span>
     </div>

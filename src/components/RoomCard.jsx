@@ -54,7 +54,7 @@ const RoomCard = forwardRef(function RoomCard({ card, cardBack, corrupted, dim =
           )}
 
           <div className="relative flex items-center justify-between px-3 pt-3">
-            <span className="font-mono text-[10px] tracking-[0.25em]" style={{ color: style.color }}>
+            <span className="font-mono text-xs tracking-[0.2em]" style={{ color: style.color }}>
               {style.icon} {style.label}
             </span>
             {card.damage ? (
@@ -70,11 +70,11 @@ const RoomCard = forwardRef(function RoomCard({ card, cardBack, corrupted, dim =
           >
             {card.title}
           </h2>
-          <p className="relative px-3 mt-1 text-sm text-slate-300 leading-snug">{card.description}</p>
+          <p className="relative px-3 mt-1 text-sm text-slate-200 leading-snug">{card.description}</p>
 
           <div className="relative mt-auto px-3 pb-3">
             <div className="h-px w-full mb-2" style={{ background: `${style.color}55` }} />
-            <p className="font-mono text-[11px] sm:text-xs leading-relaxed text-slate-400 min-h-[4.5em]">
+            <p className="font-mono text-xs sm:text-sm leading-relaxed text-slate-300 min-h-[4.5em]">
               <Typewriter text={card.flavor} start={landed} speed={16} />
             </p>
           </div>

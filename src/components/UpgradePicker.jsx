@@ -7,6 +7,7 @@ const UpgradePicker = forwardRef(function UpgradePicker({ offer, onPick }, ref) 
   return (
     <motion.section
       ref={ref}
+      data-pick
       className="flex flex-col items-center gap-3"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -16,7 +17,7 @@ const UpgradePicker = forwardRef(function UpgradePicker({ offer, onPick }, ref) 
       <div className="text-center">
         <p className="hud-label">Floor cleared!</p>
         <h2 className="font-display text-xl sm:text-2xl neon-text mt-1">Pick an upgrade</h2>
-        <p className="text-sm text-slate-400 mt-1">It lasts the whole run.</p>
+        <p className="text-sm text-slate-300 mt-1">It lasts the whole run.</p>
       </div>
       <div className="flex justify-center gap-2 sm:gap-3">
         {offer.map((id, i) => {
@@ -37,8 +38,8 @@ const UpgradePicker = forwardRef(function UpgradePicker({ offer, onPick }, ref) 
               <span className="text-3xl sm:text-4xl leading-none" style={{ color: 'var(--accent)', textShadow: '0 0 14px var(--accent)' }}>
                 {upgrade.glyph}
               </span>
-              <span className="font-display text-xs sm:text-base text-white">{upgrade.title}</span>
-              <span className="text-xs sm:text-sm text-slate-300 leading-snug">{upgrade.text}</span>
+              <span className="font-display text-sm sm:text-base text-white">{upgrade.title}</span>
+              <span className="text-sm text-slate-200 leading-snug">{upgrade.text}</span>
             </motion.button>
           );
         })}

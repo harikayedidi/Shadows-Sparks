@@ -75,8 +75,8 @@ const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted
           transition={shownKind === 'trap' && full ? { repeat: Infinity, duration: 1.2 } : {}}
         />
 
-        <div className="relative flex items-center justify-between p-2">
-          <span className={`hud-label !text-[10px] ${compact ? 'hidden sm:inline' : ''}`}>Door {index + 1}</span>
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-2">
+          <span className={`hud-label ${compact ? 'hidden sm:inline' : ''}`}>Door {index + 1}</span>
           <kbd>{index + 1}</kbd>
         </div>
 
@@ -93,12 +93,12 @@ const DoorCard = forwardRef(function DoorCard({ door, index, cardBack, corrupted
 
         <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 via-black/70 to-transparent pt-6">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] tracking-widest px-1.5" style={{ color: style.color, border: `1px solid ${style.color}66` }}>
+            <span className="font-mono text-xs tracking-wider px-1.5" style={{ color: style.color, border: `1px solid ${style.color}66` }}>
               {door.revealed ? '✓ ' : ''}{label}
             </span>
             <SignalBars color={style.color} strength={strength} animate={full} />
           </div>
-          <p className="mt-1 text-[11px] sm:text-xs leading-snug text-slate-300">{line}</p>
+          <p className="mt-1 text-xs sm:text-sm leading-snug text-slate-200">{line}</p>
         </div>
 
         <div className="holo-sheen" />

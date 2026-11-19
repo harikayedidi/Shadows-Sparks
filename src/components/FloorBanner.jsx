@@ -26,7 +26,7 @@ export default function FloorBanner({ boss, twist }) {
               <span key={i} className="w-3 h-3 rotate-45" style={{ background: i < done ? 'var(--accent)' : 'transparent', border: '1px solid var(--accent)' }} />
             ))}
           </div>
-          <span className="hud-label !text-[10px]">{done}/{boss.total} dark</span>
+          <span className="hud-label">{done}/{boss.total} dark</span>
         </div>
       </motion.div>
     );

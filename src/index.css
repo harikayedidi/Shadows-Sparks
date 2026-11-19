@@ -22,6 +22,11 @@ body,
   min-height: 100%;
 }
 
+/* Rajdhani runs small, so the whole rem scale is bumped up a notch. */
+html {
+  font-size: 17px;
+}
+
 body {
   margin: 0;
   background: #02030a;
@@ -160,10 +165,10 @@ button {
 
 .hud-label {
   font-family: 'Share Tech Mono', ui-monospace, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(219, 231, 255, 0.55);
+  color: rgba(219, 231, 255, 0.75);
 }
 
 /* ---------- Panels & buttons ---------- */
@@ -217,7 +222,7 @@ button {
 }
 
 .btn-neon:disabled {
-  opacity: 0.35;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -240,15 +245,17 @@ button {
 }
 
 .btn-ghost:disabled {
-  opacity: 0.35;
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.2);
   cursor: not-allowed;
 }
 
 .icon-btn {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.1rem;
   color: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(0, 0, 0, 0.4);
@@ -260,9 +267,15 @@ button {
   background: var(--accent-soft);
 }
 
+.icon-btn-lg {
+  width: 3.25rem;
+  height: 3.25rem;
+  font-size: 1.6rem;
+}
+
 kbd {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   padding: 0.05rem 0.4rem;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-bottom-width: 2px;
@@ -367,6 +380,17 @@ kbd {
 .log-scroll {
   scrollbar-width: thin;
   scrollbar-color: var(--accent-soft) transparent;
+}
+
+/* ---------- Phones and touch screens (keep in sync with MOBILE_QUERY) ---------- */
+
+@media (max-width: 767px), (pointer: coarse) {
+  .vignette,
+  .cursor-light,
+  kbd,
+  .keys-only {
+    display: none !important;
+  }
 }
 
 /* ---------- Comfort settings (set on <html> by App) ---------- */
