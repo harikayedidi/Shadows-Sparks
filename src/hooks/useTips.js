@@ -4,7 +4,7 @@ const KEY = 'ss.tips';
 
 const TIPS = [
   { id: 'doors', when: (s) => s.phase === 'choosing', text: 'Tap a door to go in. DARK rooms are safe. BRIGHT rooms hurt. Tags can be wrong sometimes!' },
-  { id: 'item', when: (s) => s.inventory.some(Boolean), text: 'You got an item! Tap it, or drag it onto your health, to use it.' },
+  { id: 'item', when: (s) => s.inventory.some(Boolean), text: 'You got an item! Tap it, or drag it onto your health, to use it.', touchText: 'You got an item! Tap it to see what it does. Double-tap it to use it.' },
   { id: 'event', when: (s) => s.phase === 'deciding', text: 'Events let you pick. Some choices are risky, some are safe.' },
   { id: 'twist', when: (s) => Boolean(s.twist), text: 'A floor twist changes the rules for this floor only. Check the banner.' },
   { id: 'upgrade', when: (s) => s.phase === 'upgrading', text: 'Upgrades last the whole run. Try mixing ones that work together!' },
@@ -29,7 +29,7 @@ export const resetTips = () => {
 };
 
 // Shows each beginner tip once, the first time its situation comes up.
-export function useTips(state) {
+export function useTips(state, mobile = false) {
   const seen = useRef(null);
   const [tip, setTip] = useState(null);
   if (!seen.current) seen.current = readSeen();
@@ -48,8 +48,8 @@ export function useTips(state) {
     } catch {
       // Ignore unavailable storage.
     }
-    setTip(next);
-  }, [state, tip]);
+    setTip(mobile && next.touchText ? { ...next, text: next.touchText } : next);
+  }, [state, tip, mobile]);
 
   useEffect(() => {
     if (!tip) return undefined;

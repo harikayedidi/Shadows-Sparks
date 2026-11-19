@@ -50,7 +50,7 @@ export default function TitleScreen({
       <p className="hud-label mb-4">A tiny robot · A tower full of lights</p>
 
       <h1
-        className="glitch neon-text font-display font-black tracking-wider text-5xl sm:text-7xl md:text-8xl leading-none"
+        className="glitch neon-text font-display font-black tracking-wider text-[2.5rem] min-[360px]:text-5xl sm:text-7xl md:text-8xl leading-none"
         data-text="SHADOWS & SPARKS"
       >
         SHADOWS &amp; SPARKS

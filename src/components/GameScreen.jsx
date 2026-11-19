@@ -60,11 +60,11 @@ export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlo
   const level = difficultyOf(state);
   const pulse = useFx(state.fx);
   const { full, off } = useSettings();
-  const [tip, dismissTip] = useTips(state);
+  const mobile = useMobile();
+  const [tip, dismissTip] = useTips(state, mobile);
   const shake = useAnimationControls();
   const integrityRef = useRef(null);
   const stageRef = useRef(null);
-  const mobile = useMobile();
   const [dragState, setDragState] = useState(null);
   const [summary, setSummary] = useState(null);
 
@@ -244,7 +244,7 @@ export default function GameScreen({ mode, difficulty, theme, muted, endlessUnlo
         </p>
 
         <footer className="grid md:grid-cols-[auto_1fr] gap-3">
-          <Inventory items={state.inventory} dropTargetRef={integrityRef} onUse={actions.useItem} onDragState={setDragState} />
+          <Inventory items={state.inventory} dropTargetRef={integrityRef} onUse={actions.useItem} onDragState={setDragState} onInspect={dismissTip} />
           <TransmissionLog entries={state.log} />
         </footer>
       </motion.div>

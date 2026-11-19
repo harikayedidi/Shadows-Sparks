@@ -17,6 +17,28 @@ const STEPS = [
   ['Climb', <>Get through 10 floors without running out of health. That's it!</>],
 ];
 
+const TOUCH = [
+  ['Doors', 'Tap the deck, then tap a door.'],
+  ['Items', 'Tap once to see what it does. Double-tap to use it.'],
+  ['Menu', 'Tap ⚙ at the top for rules, settings and quit.'],
+];
+
+function TouchTips() {
+  return (
+    <>
+      <h3 className="hud-label mt-6 mb-2">On touch screens</h3>
+      <ul className="space-y-2 text-sm text-slate-300">
+        {TOUCH.map(([label, text]) => (
+          <li key={label} className="flex gap-3 bg-white/5 px-3 py-2">
+            <b className="w-14 shrink-0 text-white">{label}</b>
+            <span>{text}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 export default function HelpModal({ onClose, welcome = false }) {
   const mobile = useMobile();
   const startRef = useRef(null);
@@ -80,6 +102,7 @@ export default function HelpModal({ onClose, welcome = false }) {
 
         {welcome ? (
           <>
+            {mobile && <TouchTips />}
             <p className="mt-5 text-sm text-slate-300">Items, bosses and twists get a quick tip the first time you see them. {mobile ? <>Tap <b>⚙</b> anytime to see all the rules.</> : <>Tap the <b>?</b> button anytime to see all the rules.</>}</p>
             <p className="mt-2 text-sm text-slate-300">Too much flashing? Open ⚙ Settings to turn down motion and glow.</p>
             {/* Sticky so the start button is always reachable on short screens. */}
@@ -103,7 +126,9 @@ export default function HelpModal({ onClose, welcome = false }) {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-sm text-slate-300">Tap an item to use it, or drag it onto your health.</p>
+            <p className="mt-2 text-sm text-slate-300">
+              {mobile ? 'Tap an item to see what it does. Double-tap it to use it, or drag it onto your health.' : 'Click an item to use it, or drag it onto your health.'}
+            </p>
 
             <h3 className="hud-label mt-6 mb-2">Along the way</h3>
             <ul className="space-y-2 text-sm text-slate-300">
@@ -112,6 +137,8 @@ export default function HelpModal({ onClose, welcome = false }) {
               <li><b className="text-amber-300">Twists:</b> some floors have a special rule, like a timer or no tags. Check the yellow banner.</li>
               <li><b className="text-white">Difficulty:</b> pick Easy, Normal or Hard on the title screen. Beat Normal to unlock Hard.</li>
             </ul>
+
+            {mobile && <TouchTips />}
 
             <h3 className="keys-only hud-label mt-6 mb-2">Keys</h3>
             <p className="keys-only text-sm text-slate-300 flex flex-wrap gap-x-5 gap-y-2">
